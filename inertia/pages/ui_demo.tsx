@@ -1,15 +1,6 @@
 import { useState } from 'react'
 import { Head } from '@inertiajs/react'
-import {
-  FileText,
-  Users,
-  DollarSign,
-  TrendingUp,
-  Calendar,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-} from 'lucide-react'
+import { Calendar, CheckCircle, Clock, DollarSign, FileText, TrendingUp, Users } from 'lucide-react'
 import { MainLayout } from '~/layouts'
 import { AnimatedPage } from '~/components/animated_page'
 import { ThemeCustomizer } from '~/components/theme_customizer'
@@ -28,13 +19,13 @@ import {
 import { Stepper, StepperContent, StepperPanel } from '~/components/ui/core/stepper'
 import {
   Timeline,
-  TimelineItem,
-  TimelineDot,
   TimelineContent,
-  TimelineHeader,
-  TimelineTitle,
-  TimelineTime,
   TimelineDescription,
+  TimelineDot,
+  TimelineHeader,
+  TimelineItem,
+  TimelineTime,
+  TimelineTitle,
 } from '~/components/ui/core/timeline'
 import { EmptyState } from '~/components/ui/core/empty_state'
 import { StatsCard, StatsGrid } from '~/components/ui/core/stats_card'

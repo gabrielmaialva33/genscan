@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import { ThemeToggle } from '~/components/theme/theme_toggle'
 import { render } from '~/tests/test_utils'

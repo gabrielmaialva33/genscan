@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
 import { QueryClient } from '@tanstack/react-query'
-import { beforeAll, afterEach, afterAll, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 
 // Mock InertiaJS
 vi.mock('@inertiajs/react', () => ({

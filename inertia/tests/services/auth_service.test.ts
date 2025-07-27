@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { server } from '../mocks/server'
 import { http, HttpResponse } from 'msw'
 import { AuthService } from '~/services/auth_service'

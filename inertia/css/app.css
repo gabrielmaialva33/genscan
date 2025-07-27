@@ -2,100 +2,182 @@
 
 @layer base {
   :root {
-    /* Metronic-inspired color system using oklch */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Catppuccin Latte Color System */
+    /* Base colors */
+    --rosewater: 11 59% 67%;
+    --flamingo: 0 60% 67%;
+    --pink: 316 73% 69%;
+    --mauve: 266 85% 58%;
+    --red: 347 87% 44%;
+    --maroon: 355 76% 59%;
+    --peach: 22 99% 52%;
+    --yellow: 35 77% 49%;
+    --green: 109 58% 40%;
+    --teal: 183 74% 35%;
+    --sky: 197 97% 46%;
+    --sapphire: 189 70% 42%;
+    --blue: 220 91% 54%;
+    --lavender: 231 97% 72%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Surface colors */
+    --text: 234 16% 35%;
+    --subtext1: 233 13% 41%;
+    --subtext0: 233 10% 47%;
+    --overlay2: 232 10% 53%;
+    --overlay1: 231 10% 59%;
+    --overlay0: 228 11% 65%;
+    --surface2: 227 12% 71%;
+    --surface1: 225 14% 77%;
+    --surface0: 223 16% 83%;
+    --base: 220 23% 95%;
+    --mantle: 220 22% 92%;
+    --crust: 220 21% 89%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Semantic color mappings */
+    --background: var(--base);
+    --foreground: var(--text);
 
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --card: var(--base);
+    --card-foreground: var(--text);
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --popover: var(--base);
+    --popover-foreground: var(--text);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --primary: var(--mauve);
+    --primary-foreground: var(--base);
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --secondary: var(--sky);
+    --secondary-foreground: var(--base);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: var(--surface0);
+    --muted-foreground: var(--subtext0);
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --accent: var(--peach);
+    --accent-foreground: var(--base);
+
+    --destructive: var(--red);
+    --destructive-foreground: var(--base);
+
+    --border: var(--surface0);
+    --input: var(--surface0);
+    --ring: var(--mauve);
 
     --radius: 0.5rem;
 
-    /* Additional Metronic-like variables */
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
+    /* Additional semantic variables */
+    --success: var(--green);
+    --success-foreground: var(--base);
 
-    --warning: 45.4 93.3% 47.5%;
-    --warning-foreground: 26 83.3% 14.1%;
+    --warning: var(--yellow);
+    --warning-foreground: var(--base);
 
-    --info: 199.7 89% 48.4%;
-    --info-foreground: 210 40% 98%;
+    --info: var(--sky);
+    --info-foreground: var(--base);
 
     /* Chart colors */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: var(--mauve);
+    --chart-2: var(--sky);
+    --chart-3: var(--peach);
+    --chart-4: var(--lavender);
+    --chart-5: var(--flamingo);
+
+    /* Custom gradients */
+    --gradient-dna: linear-gradient(
+      135deg,
+      hsl(var(--mauve)),
+      hsl(var(--lavender)),
+      hsl(var(--sky))
+    );
+    --gradient-warm: linear-gradient(
+      135deg,
+      hsl(var(--peach)),
+      hsl(var(--pink)),
+      hsl(var(--flamingo))
+    );
+    --gradient-cool: linear-gradient(
+      135deg,
+      hsl(var(--sky)),
+      hsl(var(--sapphire)),
+      hsl(var(--blue))
+    );
+    --gradient-subtle: linear-gradient(135deg, hsl(var(--base)), hsl(var(--mantle)));
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Catppuccin Mocha for dark mode */
+    --rosewater: 10 56% 91%;
+    --flamingo: 0 59% 88%;
+    --pink: 316 72% 86%;
+    --mauve: 267 84% 81%;
+    --red: 343 81% 75%;
+    --maroon: 350 65% 77%;
+    --peach: 23 92% 75%;
+    --yellow: 41 86% 83%;
+    --green: 115 54% 76%;
+    --teal: 170 57% 73%;
+    --sky: 189 71% 73%;
+    --sapphire: 199 76% 69%;
+    --blue: 217 92% 76%;
+    --lavender: 232 97% 85%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --text: 226 64% 88%;
+    --subtext1: 227 35% 80%;
+    --subtext0: 228 24% 72%;
+    --overlay2: 228 17% 64%;
+    --overlay1: 228 15% 57%;
+    --overlay0: 228 13% 50%;
+    --surface2: 228 12% 44%;
+    --surface1: 228 12% 38%;
+    --surface0: 229 13% 31%;
+    --base: 232 23% 18%;
+    --mantle: 233 23% 15%;
+    --crust: 235 23% 13%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Dark mode semantic mappings */
+    --background: var(--base);
+    --foreground: var(--text);
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --card: var(--base);
+    --card-foreground: var(--text);
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --popover: var(--base);
+    --popover-foreground: var(--text);
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --primary: var(--mauve);
+    --primary-foreground: var(--crust);
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --secondary: var(--sky);
+    --secondary-foreground: var(--crust);
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: var(--surface0);
+    --muted-foreground: var(--subtext0);
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --accent: var(--peach);
+    --accent-foreground: var(--crust);
 
-    /* Additional dark mode variables */
-    --success: 142.1 70.6% 45.3%;
-    --success-foreground: 144.9 80.4% 10%;
+    --destructive: var(--red);
+    --destructive-foreground: var(--crust);
 
-    --warning: 32.1 94.6% 43.8%;
-    --warning-foreground: 21.7 77.8% 3.1%;
+    --border: var(--surface0);
+    --input: var(--surface0);
+    --ring: var(--mauve);
 
-    --info: 213.1 93.9% 67.8%;
-    --info-foreground: 216.9 91.4% 12.9%;
+    /* Dark mode additional */
+    --success: var(--green);
+    --success-foreground: var(--crust);
 
-    /* Chart colors for dark mode */
-    --chart-1: 220 70% 60%;
-    --chart-2: 160 60% 55%;
-    --chart-3: 30 80% 65%;
-    --chart-4: 280 65% 70%;
-    --chart-5: 340 75% 65%;
+    --warning: var(--yellow);
+    --warning-foreground: var(--crust);
+
+    --info: var(--sky);
+    --info-foreground: var(--crust);
+
+    /* Dark mode chart colors */
+    --chart-1: var(--mauve);
+    --chart-2: var(--sky);
+    --chart-3: var(--peach);
+    --chart-4: var(--lavender);
+    --chart-5: var(--flamingo);
   }
 }
 
@@ -134,7 +216,7 @@
 
 /* Custom utilities */
 @layer utilities {
-  /* Text sizes from Metronic */
+  /* Text sizes */
   .text-2xs {
     font-size: 0.6875rem; /* 11px */
     line-height: 1rem; /* 16px */
@@ -145,169 +227,226 @@
     line-height: 1.25rem; /* 20px */
   }
 
-  /* Height utilities */
-  .h-7 {
-    height: 1.75rem; /* 28px */
+  /* Custom shadows */
+  .shadow-glow {
+    box-shadow: 0 0 40px -10px hsl(var(--primary) / 0.5);
   }
 
-  .h-8-5 {
-    height: 2.125rem; /* 34px */
+  .shadow-glow-sm {
+    box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.4);
   }
 
-  /* Shadow utilities */
-  .shadow-xs {
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  /* Gradient backgrounds */
+  .bg-gradient-dna {
+    background: var(--gradient-dna);
   }
 
-  /* Icon gradient backgrounds */
-  .icon-gradient-primary {
-    background: linear-gradient(to bottom right, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+  .bg-gradient-warm {
+    background: var(--gradient-warm);
   }
 
-  .icon-gradient-blue {
-    background: linear-gradient(to bottom right, #2563eb, #60a5fa);
+  .bg-gradient-cool {
+    background: var(--gradient-cool);
   }
 
-  .icon-gradient-cyan {
-    background: linear-gradient(to bottom right, #0891b2, #67e8f9);
+  .bg-gradient-subtle {
+    background: var(--gradient-subtle);
   }
 
-  .icon-gradient-yellow {
-    background: linear-gradient(to bottom right, #facc15, #ca8a04);
-  }
-
-  .icon-gradient-indigo {
-    background: linear-gradient(to bottom right, #6366f1, #4f46e5);
-  }
-
-  .icon-gradient-green {
-    background: linear-gradient(to bottom right, #4ade80, #16a34a);
-  }
-
-  .icon-gradient-orange {
-    background: linear-gradient(to bottom right, #fb923c, #ea580c);
-  }
-
-  .icon-gradient-teal {
-    background: linear-gradient(to bottom right, #2dd4bf, #14b8a6);
-  }
-
-  /* Tech stack card gradients with better visibility */
-  .tech-gradient-primary {
-    background: linear-gradient(
-      to bottom right,
-      hsl(var(--primary) / 0.15),
-      hsl(var(--primary) / 0.35)
-    );
-  }
-
-  .tech-gradient-blue {
-    background: linear-gradient(
-      to bottom right,
-      rgba(59, 130, 246, 0.15),
-      rgba(59, 130, 246, 0.35)
-    );
-  }
-
-  .tech-gradient-teal {
-    background: linear-gradient(
-      to bottom right,
-      rgba(20, 184, 166, 0.15),
-      rgba(20, 184, 166, 0.35)
-    );
-  }
-
-  .tech-gradient-cyan {
-    background: linear-gradient(to bottom right, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.35));
-  }
-
-  /* Dark mode tech gradients with higher opacity */
-  .dark .tech-gradient-primary {
-    background: linear-gradient(
-      to bottom right,
-      hsl(var(--primary) / 0.25),
-      hsl(var(--primary) / 0.45)
-    );
-  }
-
-  .dark .tech-gradient-blue {
-    background: linear-gradient(
-      to bottom right,
-      rgba(59, 130, 246, 0.25),
-      rgba(59, 130, 246, 0.45)
-    );
-  }
-
-  .dark .tech-gradient-teal {
-    background: linear-gradient(
-      to bottom right,
-      rgba(20, 184, 166, 0.25),
-      rgba(20, 184, 166, 0.45)
-    );
-  }
-
-  .dark .tech-gradient-cyan {
-    background: linear-gradient(to bottom right, rgba(6, 182, 212, 0.25), rgba(6, 182, 212, 0.45));
-  }
-
-  /* Home page specific styles */
-  .bg-grid-white {
-    background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 30px 30px;
-  }
-
-  .bg-grid-pattern {
-    background-image:
-      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
-    background-size: 30px 30px;
-  }
-
-  /* Animated gradient backgrounds for floating cards */
-  .floating-card-1 {
-    background: linear-gradient(
-      135deg,
-      rgba(34, 197, 94, 0.1) 0%,
-      rgba(34, 197, 94, 0.05) 50%,
-      transparent 100%
-    );
-  }
-
-  .floating-card-2 {
-    background: linear-gradient(
-      135deg,
-      rgba(168, 85, 247, 0.1) 0%,
-      rgba(168, 85, 247, 0.05) 50%,
-      transparent 100%
-    );
-  }
-
-  .floating-card-3 {
-    background: linear-gradient(
-      135deg,
-      rgba(59, 130, 246, 0.1) 0%,
-      rgba(59, 130, 246, 0.05) 50%,
-      transparent 100%
-    );
-  }
-
-  /* Gradient text utility */
+  /* Gradient text */
   .text-gradient {
-    background: linear-gradient(to right, hsl(var(--primary)), #60a5fa, #a855f7);
+    background: var(--gradient-dna);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Backdrop blur variations */
+  .text-gradient-warm {
+    background: var(--gradient-warm);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Grid patterns */
+  .bg-grid-dna {
+    background-image:
+      linear-gradient(to right, hsl(var(--surface0) / 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--surface0) / 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, transparent 0%, black 70%);
+  }
+
+  .bg-dots-pattern {
+    background-image: radial-gradient(hsl(var(--surface0) / 0.5) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Glassmorphism */
+  .glass {
+    background: hsl(var(--base) / 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--surface0) / 0.5);
+  }
+
+  .glass-dark {
+    background: hsl(var(--mantle) / 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--surface0) / 0.3);
+  }
+
+  /* Floating animation */
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: float 8s ease-in-out infinite;
+  }
+
+  /* Pulse glow */
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 40px -5px hsl(var(--primary) / 0.8);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* DNA rotation */
+  @keyframes dna-rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-dna {
+    animation: dna-rotate 20s linear infinite;
+  }
+
+  /* Reveal animation */
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-reveal {
+    animation: reveal-up 0.6s ease-out forwards;
+  }
+
+  /* Connection line */
+  .connection-line {
+    position: absolute;
+    height: 2px;
+    background: var(--gradient-dna);
+    transform-origin: left center;
+    opacity: 0.3;
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px hsl(var(--primary) / 0.3);
+  }
+
+  /* Magnetic button effect */
+  .magnetic {
+    position: relative;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Gradient borders */
+  .border-gradient {
+    position: relative;
+    background: hsl(var(--base));
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    margin: -2px;
+    border-radius: inherit;
+    background: var(--gradient-dna);
+  }
+
+  /* Glow text */
+  .text-glow {
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.5);
+  }
+
+  /* Backdrop effects */
   .backdrop-blur-xl {
     backdrop-filter: blur(24px);
   }
 
   .backdrop-blur-2xl {
     backdrop-filter: blur(40px);
+  }
+
+  /* Loading skeleton with Catppuccin colors */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--surface0)) 0%,
+      hsl(var(--surface1)) 50%,
+      hsl(var(--surface0)) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Scroll indicator */
+  .scroll-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-dna);
+    transform-origin: left;
+    z-index: 9999;
   }
 }
 

@@ -1,6 +1,6 @@
 import { FormEvent } from 'react'
-import { useForm, Link } from '@inertiajs/react'
-import { Mail, Lock } from 'lucide-react'
+import { Link, useForm } from '@inertiajs/react'
+import { Lock, Mail } from 'lucide-react'
 
 import { Button } from '../ui/core/button'
 import { FormInput } from '~/components/ui/core/form_input'

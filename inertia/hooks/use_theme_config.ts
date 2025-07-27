@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export type ThemeColor = 'blue' | 'green' | 'purple' | 'red' | 'orange' | 'pink' | 'teal' | 'indigo'
 

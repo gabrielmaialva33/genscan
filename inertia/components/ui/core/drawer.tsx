@@ -44,7 +44,12 @@ interface DrawerProps {
 
 const Drawer = ({ open = false, onOpenChange, children }: DrawerProps) => {
   return (
-    <DrawerContext.Provider value={{ open, onOpenChange: onOpenChange || (() => {}) }}>
+    <DrawerContext.Provider
+      value={{
+        open,
+        onOpenChange: onOpenChange || (() => {}),
+      }}
+    >
       {children}
     </DrawerContext.Provider>
   )

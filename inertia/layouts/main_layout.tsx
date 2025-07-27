@@ -1,4 +1,4 @@
-import { useState, ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import { Header } from './main/components/header'
 import { Sidebar } from './main/components/sidebar'
 import { cn } from '~/utils/cn'

@@ -87,6 +87,7 @@ export interface AuthResponse {
 export interface LoginFormData {
   uid: string
   password: string
+
   [key: string]: any
 }
 
