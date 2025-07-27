@@ -27,37 +27,37 @@ export default class ImportFromMotherService {
    */
   async run(payload: IImport.ImportFromMotherPayload): Promise<IImport.ImportResult> {
     const {
-      mother_name,
-      family_tree_id,
-      user_id,
-      import_relatives = true,
-      merge_duplicates = true,
+      mother_name: motherName,
+      family_tree_id: familyTreeId,
+      user_id: userId,
+      import_relatives: importRelatives = false,
+      merge_duplicates: mergeDuplicates = false,
     } = payload
 
     // Create import record
     const dataImport = await this.importsRepository.createImport(
       'mother_name',
-      mother_name,
-      user_id,
-      family_tree_id
+      motherName,
+      userId,
+      familyTreeId
     )
 
     try {
       await this.importsRepository.markAsProcessing(dataImport.id)
 
       // Fetch data from API
-      logger.info(`Fetching children for mother: ${mother_name}`)
-      const apiData = await this.findexClient.searchByMotherName(mother_name)
+      logger.info(`Fetching children for mother: ${motherName}`)
+      const apiData = await this.findexClient.searchByMotherName(motherName)
 
       // Save API request/response
-      dataImport.api_request = { mae: mother_name }
+      dataImport.api_request = { mae: motherName }
       dataImport.api_response = apiData
       await dataImport.save()
 
       if (!apiData || apiData.length === 0) {
-        logger.warn(`No children found for mother: ${mother_name}`)
+        logger.warn(`No children found for mother: ${motherName}`)
         await this.importsRepository.markAsCompleted(dataImport.id, {
-          errors: [{ person: mother_name, error: 'No children found' }],
+          errors: [{ person: motherName, error: 'No children found' }],
         })
 
         return {
@@ -88,7 +88,7 @@ export default class ImportFromMotherService {
         try {
           // Map basic person data
           const personData = this.findexMapper.mapMotherSearchToPerson(childData)
-          personData.created_by = user_id
+          personData.created_by = userId
 
           // Check if person already exists
           let person = await this.peopleRepository.findByNationalId(childData.CPF)
@@ -96,7 +96,7 @@ export default class ImportFromMotherService {
 
           if (!person) {
             // Check for duplicates by name and birth date
-            if (merge_duplicates && personData.full_name && personData.birth_date) {
+            if (mergeDuplicates && personData.full_name && personData.birth_date) {
               const potentialDuplicates = await this.peopleRepository.search(personData.full_name)
               const duplicate = potentialDuplicates.find((p) =>
                 this.findexMapper.isLikelyDuplicate(personData, p)
@@ -127,14 +127,14 @@ export default class ImportFromMotherService {
           siblings.push({ id: person.id, cpf: childData.CPF })
 
           // If import_relatives is true, fetch full data for each child
-          if (import_relatives) {
+          if (importRelatives) {
             try {
               const fullImportResult = await this.importFromCPFService.run({
                 cpf: childData.CPF,
-                family_tree_id,
-                user_id,
+                family_tree_id: familyTreeId,
+                user_id: userId,
                 import_relatives: true,
-                merge_duplicates,
+                merge_duplicates: mergeDuplicates,
               })
 
               // Aggregate results (subtract the person we already counted)
@@ -177,7 +177,7 @@ export default class ImportFromMotherService {
               const existingRelationship = await this.relationshipsRepository.findBetweenPeople(
                 siblings[i].id,
                 siblings[j].id,
-                family_tree_id
+                familyTreeId
               )
 
               if (!existingRelationship) {
@@ -185,8 +185,8 @@ export default class ImportFromMotherService {
                   siblings[i].id,
                   siblings[j].id,
                   'sibling',
-                  family_tree_id,
-                  `Siblings - same mother: ${mother_name}`
+                  familyTreeId,
+                  `Siblings - same mother: ${motherName}`
                 )
                 progress.relationships_created += 2 // Bidirectional
               }

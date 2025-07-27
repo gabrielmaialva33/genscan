@@ -52,7 +52,7 @@ export default class PersonSeeder extends BaseSeeder {
 
   private async createGenerations(tree: FamilyTree) {
     const baseYear = 1920
-    const created_by = tree.owner_id
+    const createdBy = tree.owner_id
 
     // Generation 1: Great-grandparents (1920-1940)
     const greatGrandparents = {
@@ -61,7 +61,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: 'José Antônio Silva',
         birth_date: DateTime.fromObject({ year: baseYear + Math.floor(Math.random() * 10) }),
         gender: 'M',
-        created_by,
+        created_by: createdBy,
       })
         .apply('deceased')
         .create(),
@@ -70,7 +70,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: 'Maria Clara Silva',
         birth_date: DateTime.fromObject({ year: baseYear + 2 + Math.floor(Math.random() * 10) }),
         gender: 'F',
-        created_by,
+        created_by: createdBy,
       })
         .apply('deceased')
         .create(),
@@ -80,7 +80,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: 'Francisco Santos',
         birth_date: DateTime.fromObject({ year: baseYear + Math.floor(Math.random() * 10) }),
         gender: 'M',
-        created_by,
+        created_by: createdBy,
       })
         .apply('deceased')
         .create(),
@@ -89,7 +89,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: 'Ana Santos',
         birth_date: DateTime.fromObject({ year: baseYear + 2 + Math.floor(Math.random() * 10) }),
         gender: 'F',
-        created_by,
+        created_by: createdBy,
       })
         .apply('deceased')
         .create(),
@@ -102,7 +102,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: 'Carlos Eduardo Silva',
         birth_date: DateTime.fromObject({ year: 1945 + Math.floor(Math.random() * 10) }),
         gender: 'M',
-        created_by,
+        created_by: createdBy,
         mother_name: greatGrandparents.paternalGreatGrandmother.full_name,
         father_name: greatGrandparents.paternalGreatGrandfather.full_name,
       }).create(),
@@ -111,7 +111,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: 'Helena Maria Oliveira',
         birth_date: DateTime.fromObject({ year: 1947 + Math.floor(Math.random() * 10) }),
         gender: 'F',
-        created_by,
+        created_by: createdBy,
       }).create(),
 
       // Maternal grandparents
@@ -119,7 +119,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: 'Roberto Santos',
         birth_date: DateTime.fromObject({ year: 1946 + Math.floor(Math.random() * 10) }),
         gender: 'M',
-        created_by,
+        created_by: createdBy,
         mother_name: greatGrandparents.maternalGreatGrandmother.full_name,
         father_name: greatGrandparents.maternalGreatGrandfather.full_name,
       }).create(),
@@ -128,7 +128,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: 'Lucia Ferreira',
         birth_date: DateTime.fromObject({ year: 1948 + Math.floor(Math.random() * 10) }),
         gender: 'F',
-        created_by,
+        created_by: createdBy,
       }).create(),
     }
 
@@ -138,7 +138,7 @@ export default class PersonSeeder extends BaseSeeder {
       full_name: 'Paulo Silva',
       birth_date: DateTime.fromObject({ year: 1970 + Math.floor(Math.random() * 10) }),
       gender: 'M',
-      created_by,
+      created_by: createdBy,
       mother_name: grandparents.paternalGrandmother.full_name,
       father_name: grandparents.paternalGrandfather.full_name,
     }).create()
@@ -148,7 +148,7 @@ export default class PersonSeeder extends BaseSeeder {
       full_name: 'Patricia Santos',
       birth_date: DateTime.fromObject({ year: 1972 + Math.floor(Math.random() * 10) }),
       gender: 'F',
-      created_by,
+      created_by: createdBy,
       mother_name: grandparents.maternalGrandmother.full_name,
       father_name: grandparents.maternalGrandfather.full_name,
     }).create()
@@ -159,7 +159,7 @@ export default class PersonSeeder extends BaseSeeder {
       full_name: 'Ricardo Silva',
       birth_date: DateTime.fromObject({ year: 1968 + Math.floor(Math.random() * 10) }),
       gender: 'M',
-      created_by,
+      created_by: createdBy,
       mother_name: grandparents.paternalGrandmother.full_name,
       father_name: grandparents.paternalGrandfather.full_name,
     }).create()
@@ -168,7 +168,7 @@ export default class PersonSeeder extends BaseSeeder {
       full_name: 'Fernanda Silva',
       birth_date: DateTime.fromObject({ year: 1974 + Math.floor(Math.random() * 10) }),
       gender: 'F',
-      created_by,
+      created_by: createdBy,
       mother_name: grandparents.paternalGrandmother.full_name,
       father_name: grandparents.paternalGrandfather.full_name,
     }).create()
@@ -188,7 +188,7 @@ export default class PersonSeeder extends BaseSeeder {
         full_name: `${firstName} Silva Santos`,
         birth_date: DateTime.fromObject({ year: 1995 + i * 3 + Math.floor(Math.random() * 3) }),
         gender: gender as 'M' | 'F',
-        created_by,
+        created_by: createdBy,
         mother_name: mother.full_name,
         father_name: father.full_name,
       }).create()
@@ -220,7 +220,7 @@ export default class PersonSeeder extends BaseSeeder {
           full_name: `${firstName} Silva`,
           birth_date: DateTime.fromObject({ year: 2015 + i * 2 + Math.floor(Math.random() * 3) }),
           gender: gender as 'M' | 'F',
-          created_by,
+          created_by: createdBy,
           mother_name: oldestChild.gender === 'F' ? oldestChild.full_name : 'Juliana Costa',
           father_name: oldestChild.gender === 'M' ? oldestChild.full_name : 'André Costa',
         })
