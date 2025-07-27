@@ -26,6 +26,15 @@ router
       .as('imports.mother')
 
     router
+      .post('/full-tree', [ImportController, 'importFullTree'])
+      .use(
+        middleware.permission({
+          permissions: `${IPermission.Resources.IMPORTS}.${IPermission.Actions.CREATE}`,
+        })
+      )
+      .as('imports.fullTree')
+
+    router
       .get('/:id/status', [ImportController, 'getImportStatus'])
       .where('id', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
       .use(

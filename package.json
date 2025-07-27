@@ -30,6 +30,7 @@
     "#listeners/*": "./app/listeners/*.js",
     "#interfaces/*": "./app/interfaces/*.js",
     "#middleware/*": "./app/middleware/*.js",
+    "#jobs/*": "./app/jobs/*.js",
     "#validators/*": "./app/validators/*.js",
     "#providers/*": "./providers/*.js",
     "#policies/*": "./app/policies/*.js",
