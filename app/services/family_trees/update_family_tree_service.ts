@@ -12,7 +12,7 @@ export default class UpdateFamilyTreeService {
     if (!familyTree) {
       throw new NotFoundException('Family tree not found')
     }
-    
+
     await familyTree.merge(payload).save()
     return familyTree
   }

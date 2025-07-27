@@ -5,7 +5,7 @@ import FamilyTree from '#models/family_tree'
 import { PaginateOptions } from '#shared/lucid/lucid_repository_interface'
 
 interface ListFamilyTreesOptions extends PaginateOptions<typeof FamilyTree> {
-  user_id?: string
+  user_id?: number
   privacy?: 'private' | 'public' | 'family'
   search?: string
 }
@@ -15,11 +15,11 @@ export default class ListFamilyTreesService {
   constructor(private familyTreeRepository: FamilyTreesRepository) {}
 
   async run(options: ListFamilyTreesOptions) {
-    const { user_id, privacy, search, ...paginateOptions } = options
+    const { user_id: userId, privacy, search, ...paginateOptions } = options
 
     const modifyQuery = (query: ModelQueryBuilderContract<typeof FamilyTree>) => {
-      if (user_id) {
-        query.where('owner_id', user_id)
+      if (userId) {
+        query.where('owner_id', userId)
       }
 
       if (privacy) {

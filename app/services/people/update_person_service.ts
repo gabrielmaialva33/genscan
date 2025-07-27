@@ -12,7 +12,7 @@ export default class UpdatePersonService {
     if (!person) {
       throw new NotFoundException('Person not found')
     }
-    
+
     await person.merge(payload).save()
     return person
   }

@@ -8,7 +8,7 @@ interface ListPeopleOptions extends PaginateOptions<typeof Person> {
   search?: string
   gender?: 'M' | 'F' | 'O'
   is_living?: boolean
-  created_by?: string
+  created_by?: number
 }
 
 @inject()
@@ -16,7 +16,13 @@ export default class ListPeopleService {
   constructor(private peopleRepository: PeopleRepository) {}
 
   async run(options: ListPeopleOptions) {
-    const { search, gender, is_living, created_by, ...paginateOptions } = options
+    const {
+      search,
+      gender,
+      is_living: isLiving,
+      created_by: createdBy,
+      ...paginateOptions
+    } = options
 
     const modifyQuery = (query: ModelQueryBuilderContract<typeof Person>) => {
       if (search) {
@@ -33,16 +39,16 @@ export default class ListPeopleService {
         query.where('gender', gender)
       }
 
-      if (typeof is_living === 'boolean') {
-        if (is_living) {
+      if (typeof isLiving === 'boolean') {
+        if (isLiving) {
           query.whereNull('death_date')
         } else {
           query.whereNotNull('death_date')
         }
       }
 
-      if (created_by) {
-        query.where('created_by', created_by)
+      if (createdBy) {
+        query.where('created_by', createdBy)
       }
     }
 

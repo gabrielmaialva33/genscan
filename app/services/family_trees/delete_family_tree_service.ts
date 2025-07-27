@@ -11,7 +11,7 @@ export default class DeleteFamilyTreeService {
     if (!familyTree) {
       throw new NotFoundException('Family tree not found')
     }
-    
+
     await familyTree.delete()
   }
 }
