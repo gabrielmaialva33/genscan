@@ -26,6 +26,16 @@ info:
     2. **Get Token**: Extract the `access_token` from the response
     3. **Use Token**: Include `Authorization: Bearer <token>` in all requests
 
+    ## Postman Script
+    ```js
+    const response = pm.response.json();
+    if (response.access_token) {
+        pm.environment.set("bearerToken", response.auth.access_token);
+        pm.environment.set("refreshToken", response.auth.refresh_token);
+        console.log("✅ Token saved successfully!");
+    }
+    ```
+
     ### Token Management
 
     - **Access Token Lifetime**: 1 hour
