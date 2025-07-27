@@ -29,7 +29,7 @@ info:
     ## Postman Script
     ```js
     const response = pm.response.json();
-    if (response.access_token) {
+    if (response.auth.access_token) {
         pm.environment.set("bearerToken", response.auth.access_token);
         pm.environment.set("refreshToken", response.auth.refresh_token);
         console.log("✅ Token saved successfully!");
