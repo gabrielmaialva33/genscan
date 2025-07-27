@@ -602,9 +602,9 @@ Accept: application/json
 ### Success Response - File Upload
 # {
 #   "url": "https://storage.example.com/files/abc123.pdf",
-#   "clientName": "document.pdf",
-#   "fileCategory": "document",
-#   "fileType": "application/pdf",
+#   "client_name": "document.pdf",
+#   "file_category": "document",
+#   "file_type": "application/pdf",
 #   "size": 12345,
 #   "extname": "pdf"
 # }

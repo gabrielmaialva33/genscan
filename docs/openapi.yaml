@@ -432,14 +432,14 @@ components:
         url:
           type: string
           example: 'https://storage.example.com/files/abc123.pdf'
-        clientName:
+        client_name:
           type: string
           example: 'document.pdf'
-        fileCategory:
+        file_category:
           type: string
           enum: [image, document, video, audio, file]
           example: 'document'
-        fileType:
+        file_type:
           type: string
           example: 'application/pdf'
         size:
