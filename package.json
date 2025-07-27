@@ -37,6 +37,7 @@
     "#abilities/*": "./app/abilities/*.js",
     "#repositories/*": "./app/repositories/*.js",
     "#routes/*": "./app/routes/*.js",
+    "#serializers/*": "./app/serializers/*.js",
     "#database/*": "./database/*.js",
     "#tests/*": "./tests/*.js",
     "#start/*": "./start/*.js",
