@@ -10,7 +10,7 @@ namespace IFamilyTree {
     /**
      * Find family trees for a specific user
      */
-    findByUserId(userId: string): Promise<FamilyTree[]>
+    findByUserId(userId: number): Promise<FamilyTree[]>
 
     /**
      * Find family tree with members and people
@@ -20,14 +20,14 @@ namespace IFamilyTree {
     /**
      * Check if user has access to family tree
      */
-    userHasAccess(familyTreeId: string, userId: string): Promise<boolean>
+    userHasAccess(familyTreeId: string, userId: number): Promise<boolean>
 
     /**
      * Get user's role in family tree
      */
     getUserRole(
       familyTreeId: string,
-      userId: string
+      userId: number
     ): Promise<'owner' | 'admin' | 'editor' | 'viewer' | null>
   }
 

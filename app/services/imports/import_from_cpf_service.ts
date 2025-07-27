@@ -27,17 +27,17 @@ export default class ImportFromCPFService {
   async run(payload: IImport.ImportFromCPFPayload): Promise<IImport.ImportResult> {
     const {
       cpf,
-      family_tree_id,
-      user_id,
-      import_relatives = true,
-      merge_duplicates = true,
+      family_tree_id: familyTreeId,
+      user_id: userId,
+      import_relatives: importRelatives = true,
+      merge_duplicates: mergeDuplicates = true,
     } = payload
 
     // Check if similar import was done recently
     const recentImport = await this.importsRepository.findRecentSimilar(
       'national_id',
       cpf,
-      family_tree_id,
+      familyTreeId,
       24 // 24 hours
     )
 
@@ -57,8 +57,8 @@ export default class ImportFromCPFService {
     const dataImport = await this.importsRepository.createImport(
       'national_id',
       cpf,
-      user_id,
-      family_tree_id
+      userId,
+      familyTreeId
     )
 
     try {
@@ -75,14 +75,14 @@ export default class ImportFromCPFService {
 
       // Map and create/update main person
       const personData = this.findexMapper.mapToPerson(apiData)
-      personData.created_by = user_id
+      personData.created_by = userId
 
       let person = await this.peopleRepository.findByNationalId(cpf)
       let isNewPerson = false
 
       if (!person) {
         // Check for duplicates by name and birth date
-        if (merge_duplicates && personData.full_name && personData.birth_date) {
+        if (mergeDuplicates && personData.full_name && personData.birth_date) {
           const potentialDuplicates = await this.peopleRepository.search(personData.full_name)
           const duplicate = potentialDuplicates.find((p) =>
             this.findexMapper.isLikelyDuplicate(personData, p)
@@ -128,14 +128,14 @@ export default class ImportFromCPFService {
       }
 
       // Import relatives if requested
-      if (import_relatives && apiData.PARENTES && apiData.PARENTES.length > 0) {
+      if (importRelatives && apiData.PARENTES && apiData.PARENTES.length > 0) {
         const mappedRelatives = this.findexMapper.mapRelatives(apiData.PARENTES)
         const relativeResults = await this.importRelatives(
           mappedRelatives,
           person.id,
-          family_tree_id,
-          user_id,
-          merge_duplicates
+          familyTreeId,
+          userId,
+          mergeDuplicates
         )
 
         progress.persons_created += relativeResults.persons_created
@@ -176,7 +176,7 @@ export default class ImportFromCPFService {
     relatives: IImport.RelativeMapping[],
     mainPersonId: string,
     familyTreeId: string,
-    userId: string,
+    userId: number,
     mergeDuplicates: boolean
   ): Promise<{
     persons_created: number

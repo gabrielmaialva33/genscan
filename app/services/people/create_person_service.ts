@@ -6,7 +6,7 @@ import IPerson from '#interfaces/person_interface'
 export default class CreatePersonService {
   constructor(private peopleRepository: PeopleRepository) {}
 
-  async run(payload: IPerson.CreatePayload, details?: IPerson.PersonDetailPayload) {
+  async run(payload: IPerson.CreatePayload, details?: IPerson.CreatePersonDetailPayload) {
     if (details) {
       return this.peopleRepository.createWithDetails(payload, details)
     }

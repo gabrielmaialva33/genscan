@@ -9,7 +9,7 @@ export const FamilyTreeFactory = factory
     return {
       name: `${faker.person.lastName()} Family Tree`,
       description: faker.lorem.paragraph(),
-      owner_id: faker.string.uuid(),
+      owner_id: faker.number.int({ min: 1, max: 1000 }),
       privacy: 'private' as const,
       settings: {
         theme: 'light',

@@ -16,10 +16,10 @@ export const FamilyTreeMemberFactory = factory
 
     return {
       family_tree_id: faker.string.uuid(),
-      user_id: faker.string.uuid(),
+      user_id: faker.number.int({ min: 1, max: 1000 }),
       person_id: faker.datatype.boolean({ probability: 0.8 }) ? faker.string.uuid() : null,
       role: role,
-      invited_by: faker.string.uuid(),
+      invited_by: faker.number.int({ min: 1, max: 1000 }),
       invitation_token: invitationStatus === 'pending' ? faker.string.alphanumeric(32) : null,
       permissions: {
         can_edit: role !== 'viewer',

@@ -106,7 +106,7 @@ export default class DataImport extends BaseModel {
   @belongsTo(() => FamilyTree, {
     foreignKey: 'family_tree_id',
   })
-  declare familyTree: BelongsTo<typeof FamilyTree>
+  declare family_tree: BelongsTo<typeof FamilyTree>
 
   /**
    * ------------------------------------------------------
@@ -119,7 +119,7 @@ export default class DataImport extends BaseModel {
    * Query Scopes
    * ------------------------------------------------------
    */
-  static forUser(query: any, userId: string) {
+  static forUser(query: any, userId: number) {
     query.where('user_id', userId)
   }
 

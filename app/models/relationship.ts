@@ -74,12 +74,12 @@ export default class Relationship extends BaseModel {
   @belongsTo(() => Person, {
     foreignKey: 'related_person_id',
   })
-  declare relatedPerson: BelongsTo<typeof Person>
+  declare related_person: BelongsTo<typeof Person>
 
   @belongsTo(() => FamilyTree, {
     foreignKey: 'family_tree_id',
   })
-  declare familyTree: BelongsTo<typeof FamilyTree>
+  declare family_tree: BelongsTo<typeof FamilyTree>
 
   /**
    * ------------------------------------------------------
@@ -110,7 +110,7 @@ export default class Relationship extends BaseModel {
   }
 
   static withPeople(query: any) {
-    query.preload('person').preload('relatedPerson')
+    query.preload('person').preload('related_person')
   }
 
   /**

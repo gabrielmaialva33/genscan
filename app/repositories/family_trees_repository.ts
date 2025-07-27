@@ -16,7 +16,7 @@ export default class FamilyTreesRepository
   /**
    * Find family trees for a specific user
    */
-  async findByUserId(userId: string): Promise<FamilyTree[]> {
+  async findByUserId(userId: number): Promise<FamilyTree[]> {
     return this.model
       .query()
       .whereHas('members', (query) => {
@@ -40,7 +40,7 @@ export default class FamilyTreesRepository
         query.preload('user').preload('person')
       })
       .preload('relationships', (query) => {
-        query.preload('person').preload('relatedPerson')
+        query.preload('person').preload('related_person')
       })
       .first()
   }
@@ -48,7 +48,7 @@ export default class FamilyTreesRepository
   /**
    * Check if user has access to family tree
    */
-  async userHasAccess(familyTreeId: string, userId: string): Promise<boolean> {
+  async userHasAccess(familyTreeId: string, userId: number): Promise<boolean> {
     const member = await FamilyTreeMember.query()
       .where('family_tree_id', familyTreeId)
       .where('user_id', userId)
@@ -63,7 +63,7 @@ export default class FamilyTreesRepository
    */
   async getUserRole(
     familyTreeId: string,
-    userId: string
+    userId: number
   ): Promise<'owner' | 'admin' | 'editor' | 'viewer' | null> {
     const member = await FamilyTreeMember.query()
       .where('family_tree_id', familyTreeId)
@@ -77,7 +77,7 @@ export default class FamilyTreesRepository
   /**
    * Create family tree with initial member
    */
-  async createWithOwner(data: IFamilyTree.CreatePayload, ownerId: string): Promise<FamilyTree> {
+  async createWithOwner(data: IFamilyTree.CreatePayload, ownerId: number): Promise<FamilyTree> {
     const familyTree = await this.create(data)
 
     // Add owner as member
@@ -215,7 +215,7 @@ export default class FamilyTreesRepository
   /**
    * Get family trees where user is owner
    */
-  async getOwnedByUser(userId: string): Promise<FamilyTree[]> {
+  async getOwnedByUser(userId: number): Promise<FamilyTree[]> {
     return this.model
       .query()
       .whereHas('members', (query) => {

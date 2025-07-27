@@ -98,7 +98,7 @@ export default class Person extends BaseModel {
   @hasMany(() => Relationship, {
     foreignKey: 'related_person_id',
   })
-  declare relatedRelationships: HasMany<typeof Relationship>
+  declare related_relationships: HasMany<typeof Relationship>
 
   @hasOne(() => PersonDetail, {
     foreignKey: 'person_id',
@@ -108,7 +108,7 @@ export default class Person extends BaseModel {
   @hasMany(() => FamilyTreeMember, {
     foreignKey: 'person_id',
   })
-  declare familyTreeMemberships: HasMany<typeof FamilyTreeMember>
+  declare family_tree_memberships: HasMany<typeof FamilyTreeMember>
 
   /**
    * ------------------------------------------------------

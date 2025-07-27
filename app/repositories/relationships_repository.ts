@@ -15,7 +15,7 @@ export default class RelationshipsRepository extends LucidRepository<typeof Rela
       .where('person_id', personId)
       .orWhere('related_person_id', personId)
       .preload('person')
-      .preload('relatedPerson')
+      .preload('related_person')
       .exec()
   }
 
@@ -27,7 +27,7 @@ export default class RelationshipsRepository extends LucidRepository<typeof Rela
       .query()
       .where('family_tree_id', familyTreeId)
       .preload('person')
-      .preload('relatedPerson')
+      .preload('related_person')
       .exec()
   }
 
@@ -152,7 +152,7 @@ export default class RelationshipsRepository extends LucidRepository<typeof Rela
       })
       .whereIn('relationship_type', ['parent', 'child', 'sibling', 'spouse'])
       .preload('person')
-      .preload('relatedPerson')
+      .preload('related_person')
       .exec()
 
     const parents: Relationship[] = []

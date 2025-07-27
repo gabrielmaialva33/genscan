@@ -40,7 +40,7 @@ export interface JwtUserProviderContract<RealUser> {
 }
 
 export type BaseJwtContent = {
-  userId: string | number | BigInt
+  userId: number | number | BigInt
 }
 
 export type JwtGuardOptions<RealUser extends any = unknown> = {

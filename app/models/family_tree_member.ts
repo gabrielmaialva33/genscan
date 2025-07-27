@@ -82,7 +82,7 @@ export default class FamilyTreeMember extends BaseModel {
   @belongsTo(() => FamilyTree, {
     foreignKey: 'family_tree_id',
   })
-  declare familyTree: BelongsTo<typeof FamilyTree>
+  declare family_tree: BelongsTo<typeof FamilyTree>
 
   @belongsTo(() => User, {
     foreignKey: 'user_id',
@@ -119,7 +119,7 @@ export default class FamilyTreeMember extends BaseModel {
    * Query Scopes
    * ------------------------------------------------------
    */
-  static forUser(query: any, userId: string) {
+  static forUser(query: any, userId: number) {
     query.where('user_id', userId)
   }
 
@@ -136,7 +136,7 @@ export default class FamilyTreeMember extends BaseModel {
   }
 
   static withRelations(query: any) {
-    query.preload('user').preload('familyTree').preload('person')
+    query.preload('user').preload('family_tree').preload('person')
   }
 
   /**

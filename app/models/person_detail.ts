@@ -59,13 +59,13 @@ export default class PersonDetail extends BaseModel {
   declare addresses: Array<{
     type: 'home' | 'work' | 'other'
     street: string
-    number: string
+    number?: string
     complement?: string
-    neighborhood: string
+    neighborhood?: string
     city: string
     state: string
     country: string
-    zip_code: string
+    zip_code?: string
   }> | null
 
   @column()
@@ -175,6 +175,6 @@ export default class PersonDetail extends BaseModel {
   getFullAddress(type: 'home' | 'work' | 'other' = 'home'): string | null {
     if (!this.addresses || this.addresses.length === 0) return null
     const address = this.addresses.find((a) => a.type === type) || this.addresses[0]
-    return `${address.street}, ${address.number}${address.complement ? ' ' + address.complement : ''}, ${address.neighborhood}, ${address.city}/${address.state} - ${address.zip_code}`
+    return `${address.street}${address.number ? ', ' + address.number : ''}${address.complement ? ' ' + address.complement : ''}${address.neighborhood ? ', ' + address.neighborhood : ''}, ${address.city}/${address.state}${address.zip_code ? ' - ' + address.zip_code : ''}`
   }
 }

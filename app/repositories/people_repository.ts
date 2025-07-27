@@ -64,7 +64,7 @@ export default class PeopleRepository
    */
   async createWithDetails(
     data: IPerson.CreatePayload,
-    details?: IPerson.PersonDetailPayload
+    details?: IPerson.CreatePersonDetailPayload
   ): Promise<Person> {
     const person = await this.create(data)
 
@@ -72,7 +72,7 @@ export default class PeopleRepository
       await PersonDetail.create({
         ...details,
         person_id: person.id,
-      })
+      } as IPerson.PersonDetailPayload)
       await person.load('details')
     }
 
@@ -106,13 +106,13 @@ export default class PeopleRepository
       .query()
       .where('id', id)
       .preload('details')
-      .preload('familyTreeMemberships', (query) => {
-        query.preload('familyTree')
+      .preload('family_tree_memberships', (query) => {
+        query.preload('family_tree')
       })
       .preload('relationships', (query) => {
-        query.preload('relatedPerson')
+        query.preload('related_person')
       })
-      .preload('relatedRelationships', (query) => {
+      .preload('related_relationships', (query) => {
         query.preload('person')
       })
       .first()
@@ -153,10 +153,10 @@ export default class PeopleRepository
     // Load relationships
     await person.load('relationships', (query) => {
       query.whereIn('relationship_type', ['parent', 'child', 'sibling', 'spouse'])
-      query.preload('relatedPerson')
+      query.preload('related_person')
     })
 
-    await person.load('relatedRelationships', (query) => {
+    await person.load('related_relationships', (query) => {
       query.whereIn('relationship_type', ['parent', 'child', 'sibling', 'spouse'])
       query.preload('person')
     })
@@ -170,22 +170,22 @@ export default class PeopleRepository
     person.relationships.forEach((rel) => {
       switch (rel.relationship_type) {
         case 'parent':
-          parents.push(rel.relatedPerson)
+          parents.push(rel.related_person)
           break
         case 'child':
-          children.push(rel.relatedPerson)
+          children.push(rel.related_person)
           break
         case 'sibling':
-          siblings.push(rel.relatedPerson)
+          siblings.push(rel.related_person)
           break
         case 'spouse':
-          spouse = rel.relatedPerson
+          spouse = rel.related_person
           break
       }
     })
 
     // Process incoming relationships (inverse)
-    person.relatedRelationships.forEach((rel) => {
+    person.related_relationships.forEach((rel) => {
       switch (rel.relationship_type) {
         case 'child': // If someone has this person as child, they are parent
           parents.push(rel.person)

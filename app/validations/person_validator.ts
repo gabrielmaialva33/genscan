@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine'
+import { DateTime } from 'luxon'
 
 export const createPersonValidator = vine.compile(
   vine.object({
@@ -12,8 +13,14 @@ export const createPersonValidator = vine.compile(
       })
       .optional(),
     full_name: vine.string().trim().minLength(2).maxLength(255),
-    birth_date: vine.date().optional(),
-    death_date: vine.date().optional(),
+    birth_date: vine
+      .date()
+      .transform((value) => (value ? DateTime.fromJSDate(value) : value))
+      .optional(),
+    death_date: vine
+      .date()
+      .transform((value) => (value ? DateTime.fromJSDate(value) : value))
+      .optional(),
     gender: vine.enum(['M', 'F', 'O']).optional(),
     birth_place: vine.string().trim().maxLength(255).optional(),
     death_place: vine.string().trim().maxLength(255).optional(),
@@ -99,8 +106,16 @@ export const updatePersonValidator = vine.withMetaData<{ personId: string }>().c
       .nullable()
       .optional(),
     full_name: vine.string().trim().minLength(2).maxLength(255).optional(),
-    birth_date: vine.date().nullable().optional(),
-    death_date: vine.date().nullable().optional(),
+    birth_date: vine
+      .date()
+      .transform((value) => (value ? DateTime.fromJSDate(value) : value))
+      .nullable()
+      .optional(),
+    death_date: vine
+      .date()
+      .transform((value) => (value ? DateTime.fromJSDate(value) : value))
+      .nullable()
+      .optional(),
     gender: vine.enum(['M', 'F', 'O']).nullable().optional(),
     birth_place: vine.string().trim().maxLength(255).nullable().optional(),
     death_place: vine.string().trim().maxLength(255).nullable().optional(),

@@ -20,7 +20,7 @@ export const PersonFactory = factory
       occupation: faker.person.jobTitle(),
       notes: faker.datatype.boolean({ probability: 0.3 }) ? faker.lorem.sentence() : null,
       photo_url: faker.datatype.boolean({ probability: 0.5 }) ? faker.image.avatar() : null,
-      created_by: faker.string.uuid(),
+      created_by: faker.number.int({ min: 1, max: 1000 }),
       mother_name: faker.person.fullName({ sex: 'female' }),
       father_name: faker.person.fullName({ sex: 'male' }),
     }

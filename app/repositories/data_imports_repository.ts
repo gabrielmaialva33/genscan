@@ -14,12 +14,12 @@ export default class DataImportsRepository
   /**
    * Find imports by user
    */
-  async findByUserId(userId: string): Promise<DataImport[]> {
+  async findByUserId(userId: number): Promise<DataImport[]> {
     return this.model
       .query()
       .where('user_id', userId)
       .orderBy('created_at', 'desc')
-      .preload('familyTree')
+      .preload('family_tree')
       .exec()
   }
 
@@ -39,7 +39,7 @@ export default class DataImportsRepository
    * Get import with details
    */
   async findWithDetails(id: string): Promise<DataImport | null> {
-    return this.model.query().where('id', id).preload('user').preload('familyTree').first()
+    return this.model.query().where('id', id).preload('user').preload('family_tree').first()
   }
 
   /**
@@ -79,7 +79,7 @@ export default class DataImportsRepository
   async createImport(
     type: DataImport['import_type'],
     searchValue: string,
-    userId: string,
+    userId: number,
     familyTreeId: string
   ): Promise<DataImport> {
     return this.create({
@@ -136,20 +136,20 @@ export default class DataImportsRepository
   /**
    * Get recent imports for user
    */
-  async getRecentForUser(userId: string, limit: number = 10): Promise<DataImport[]> {
+  async getRecentForUser(userId: number, limit: number = 10): Promise<DataImport[]> {
     return this.model
       .query()
       .where('user_id', userId)
       .orderBy('created_at', 'desc')
       .limit(limit)
-      .preload('familyTree')
+      .preload('family_tree')
       .exec()
   }
 
   /**
    * Get import statistics for user
    */
-  async getStatisticsForUser(userId: string): Promise<{
+  async getStatisticsForUser(userId: number): Promise<{
     total_imports: number
     successful_imports: number
     failed_imports: number

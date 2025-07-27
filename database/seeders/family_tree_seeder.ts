@@ -32,7 +32,7 @@ export default class FamilyTreeSeeder extends BaseSeeder {
         name: `Família Real Portuguesa - ${user.full_name}`,
         description:
           'Árvore genealógica da família real portuguesa, incluindo a dinastia de Bragança e suas conexões com outras casas reais europeias.',
-        owner_id: user.id.toString(),
+        owner_id: user.id,
         privacy: 'public',
         settings: {
           theme: 'classic',
@@ -50,10 +50,10 @@ export default class FamilyTreeSeeder extends BaseSeeder {
       // Add user as owner member
       await FamilyTreeMember.create({
         family_tree_id: publicTree.id,
-        user_id: user.id.toString(),
+        user_id: user.id,
         person_id: null, // Will be linked when creating people
         role: 'owner',
-        invited_by: user.id.toString(),
+        invited_by: user.id,
         accepted_at: publicTree.created_at,
         invited_at: publicTree.created_at,
         permissions: {
@@ -71,7 +71,7 @@ export default class FamilyTreeSeeder extends BaseSeeder {
       const privateTree = await FamilyTreeFactory.merge({
         name: `Família ${user.full_name.split(' ').pop()}`,
         description: `Árvore genealógica privada da família ${user.full_name.split(' ').pop()}, incluindo ancestrais e descendentes diretos.`,
-        owner_id: user.id.toString(),
+        owner_id: user.id,
         privacy: 'private',
         settings: {
           theme: 'modern',
@@ -88,10 +88,10 @@ export default class FamilyTreeSeeder extends BaseSeeder {
       // Add user as owner member
       await FamilyTreeMember.create({
         family_tree_id: privateTree.id,
-        user_id: user.id.toString(),
+        user_id: user.id,
         person_id: null,
         role: 'owner',
-        invited_by: user.id.toString(),
+        invited_by: user.id,
         accepted_at: publicTree.created_at,
         invited_at: privateTree.created_at,
         permissions: {
@@ -111,7 +111,7 @@ export default class FamilyTreeSeeder extends BaseSeeder {
           name: `Família Compartilhada - ${user.full_name}`,
           description:
             'Árvore genealógica compartilhada entre familiares para colaboração e preservação da história familiar.',
-          owner_id: user.id.toString(),
+          owner_id: user.id,
           privacy: 'family',
           settings: {
             theme: 'warm',
@@ -130,10 +130,10 @@ export default class FamilyTreeSeeder extends BaseSeeder {
         // Add owner
         await FamilyTreeMember.create({
           family_tree_id: sharedTree.id,
-          user_id: user.id.toString(),
+          user_id: user.id,
           person_id: null,
           role: 'owner',
-          invited_by: user.id.toString(),
+          invited_by: user.id,
           accepted_at: publicTree.created_at,
           invited_at: sharedTree.created_at,
           permissions: {
@@ -150,10 +150,10 @@ export default class FamilyTreeSeeder extends BaseSeeder {
         for (const collaborator of collaborators) {
           await FamilyTreeMember.create({
             family_tree_id: sharedTree.id,
-            user_id: collaborator.id.toString(),
+            user_id: collaborator.id,
             person_id: null,
             role: 'editor',
-            invited_by: user.id.toString(),
+            invited_by: user.id,
             accepted_at: publicTree.created_at,
             invited_at: sharedTree.created_at,
             permissions: {

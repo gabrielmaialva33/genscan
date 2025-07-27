@@ -70,9 +70,53 @@ namespace IPerson {
   }
 
   /**
-   * Create person detail payload
+   * Create person detail payload (from validator - without person_id)
    */
-  export interface PersonDetailPayload {
+  export interface CreatePersonDetailPayload {
+    phone_numbers?: Array<{
+      type: 'mobile' | 'home' | 'work'
+      number: string
+      is_primary: boolean
+    }> | null
+    emails?: Array<{
+      email: string
+      is_primary: boolean
+    }> | null
+    addresses?: Array<{
+      type: 'home' | 'work' | 'other'
+      street: string
+      number?: string
+      complement?: string
+      neighborhood?: string
+      city: string
+      state: string
+      country: string
+      zip_code?: string
+    }> | null
+    income?: number | null
+    education_level?: string | null
+    marital_status?: string | null
+    blood_type?: string | null
+    social_media?: {
+      facebook?: string
+      instagram?: string
+      twitter?: string
+      linkedin?: string
+    } | null
+    documents?: {
+      cpf?: string
+      rg?: string
+      voter_id?: string
+      passport?: string
+      pis?: string
+    } | null
+    api_data?: Record<string, any> | null
+  }
+
+  /**
+   * Create person detail payload (with person_id)
+   */
+  export interface PersonDetailPayload extends CreatePersonDetailPayload {
     person_id: string
     phone_numbers?: Array<{
       type: 'mobile' | 'home' | 'work'
@@ -86,13 +130,13 @@ namespace IPerson {
     addresses?: Array<{
       type: 'home' | 'work' | 'other'
       street: string
-      number: string
+      number?: string
       complement?: string
-      neighborhood: string
+      neighborhood?: string
       city: string
       state: string
       country: string
-      zip_code: string
+      zip_code?: string
     }> | null
     income?: number | null
     education_level?: string | null

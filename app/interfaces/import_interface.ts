@@ -9,7 +9,7 @@ namespace IImport {
     /**
      * Find imports by user
      */
-    findByUserId(userId: string): Promise<DataImport[]>
+    findByUserId(userId: number): Promise<DataImport[]>
 
     /**
      * Find imports by family tree

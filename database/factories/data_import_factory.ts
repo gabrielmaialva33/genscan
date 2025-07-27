@@ -36,7 +36,7 @@ export const DataImportFactory = factory
     const duplicatesFound = faker.number.int({ min: 0, max: 5 })
 
     return {
-      user_id: faker.string.uuid(),
+      user_id: faker.number.int({ min: 1, max: 1000 }),
       family_tree_id: faker.string.uuid(),
       import_type: importType,
       search_value: searchValue,
