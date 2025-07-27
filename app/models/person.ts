@@ -56,7 +56,7 @@ export default class Person extends BaseModel {
   declare photo_url: string | null
 
   @column()
-  declare created_by: string
+  declare created_by: number
 
   @column.dateTime({ autoCreate: true })
   declare created_at: DateTime

@@ -28,7 +28,7 @@ export default class FamilyTreeMember extends BaseModel {
   declare family_tree_id: string
 
   @column()
-  declare user_id: string
+  declare user_id: number
 
   @column()
   declare person_id: string | null
@@ -37,7 +37,7 @@ export default class FamilyTreeMember extends BaseModel {
   declare role: 'owner' | 'admin' | 'editor' | 'viewer'
 
   @column()
-  declare invited_by: string
+  declare invited_by: number
 
   @column()
   declare invitation_token: string | null

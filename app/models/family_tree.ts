@@ -25,7 +25,7 @@ export default class FamilyTree extends BaseModel {
   declare description: string | null
 
   @column()
-  declare owner_id: string
+  declare owner_id: number
 
   @column()
   declare privacy: 'private' | 'public' | 'family'
@@ -106,7 +106,7 @@ export default class FamilyTree extends BaseModel {
     return this.privacy === 'public'
   }
 
-  async canView(userId: string): Promise<boolean> {
+  async canView(userId: number): Promise<boolean> {
     if (this.isPublic()) return true
     if (this.owner_id === userId) return true
 
@@ -114,7 +114,7 @@ export default class FamilyTree extends BaseModel {
     return false
   }
 
-  async canEdit(userId: string): Promise<boolean> {
+  async canEdit(userId: number): Promise<boolean> {
     if (this.owner_id === userId) return true
 
     // TODO: Check if user has edit permissions after FamilyTreeMember model

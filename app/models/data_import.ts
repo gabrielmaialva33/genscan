@@ -17,7 +17,7 @@ export default class DataImport extends BaseModel {
   declare id: string
 
   @column()
-  declare user_id: string
+  declare user_id: number
 
   @column()
   declare family_tree_id: string
