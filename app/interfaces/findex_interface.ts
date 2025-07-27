@@ -24,7 +24,25 @@ export interface FindexEmail {
 export interface FindexRelative {
   CPF_VINCULO: string
   NOME_VINCULO: string
-  VINCULO: 'MAE' | 'PAI' | 'IRMA(O)' | 'AVO' | 'AVO(A)' | 'TIA(O)' | 'PRIMA(O)' | 'SOBRINHA(O)'
+  VINCULO:
+    | 'MAE'
+    | 'PAI'
+    | 'IRMA(O)'
+    | 'FILHA(O)'
+    | 'AVO'
+    | 'AVO(A)'
+    | 'AVÔ'
+    | 'AVÓ'
+    | 'TIA(O)'
+    | 'TIO'
+    | 'TIA'
+    | 'PRIMA(O)'
+    | 'PRIMO'
+    | 'PRIMA'
+    | 'SOBRINHA(O)'
+    | 'SOBRINHO'
+    | 'SOBRINHA'
+    | string
 }
 
 /**

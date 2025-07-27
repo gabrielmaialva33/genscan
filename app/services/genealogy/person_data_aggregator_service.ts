@@ -4,6 +4,8 @@ import { DateTime } from 'luxon'
 import FindexClient from '#services/integrations/findex_client'
 import SiblingValidationService from '#services/genealogy/sibling_validation_service'
 import NameMatchingService from '#services/genealogy/name_matching_service'
+import DateValidationService from '#services/genealogy/date_validation_service'
+import CpfDiscoveryService from '#services/genealogy/cpf_discovery_service'
 import { FindexPersonResponse } from '#interfaces/findex_interface'
 import IPerson from '#interfaces/person_interface'
 
@@ -44,7 +46,9 @@ export default class PersonDataAggregatorService {
   constructor(
     private findexClient: FindexClient,
     private siblingValidation: SiblingValidationService,
-    private nameMatching: NameMatchingService
+    private nameMatching: NameMatchingService,
+    private dateValidation: DateValidationService,
+    private cpfDiscovery: CpfDiscoveryService
   ) {}
 
   /**
@@ -176,7 +180,11 @@ export default class PersonDataAggregatorService {
       let actualMotherName = motherName
       let motherNameDiscoveredByFather = false
 
-      // STRATEGY: Search by father first if available (more specific, fewer results)
+      // IMPROVED STRATEGY: Search by father first if available (more specific, fewer results)
+      // Also attempt to discover mother's CPF if missing
+      let discoveredMotherCpf: string | null = null
+      let discoveredFatherCpf: string | null = null
+
       if (fatherName && fatherName !== 'SEM INFORMAÇÃO') {
         logger.info(`Starting with father search: ${fatherName}`)
         const fatherResults = await this.findexClient.searchByFatherName(fatherName)
@@ -203,6 +211,30 @@ export default class PersonDataAggregatorService {
           }
         }
 
+        // Try to discover mother's CPF using father and children information
+        if (actualMotherName && !discoveredMotherCpf) {
+          const motherDiscovery = await this.cpfDiscovery.discoverParentCpf({
+            personName: actualMotherName,
+            spouseName: fatherName,
+            childrenNames: fatherResults
+              .map((p) => this.normalizeValue(p.NOME))
+              .filter(Boolean) as string[],
+            birthDate: knownPersonData?.birth_date?.toISODate() || undefined,
+          })
+
+          if (motherDiscovery && motherDiscovery.confidence >= 70) {
+            discoveredMotherCpf = motherDiscovery.cpf
+            logger.info(
+              `Discovered mother's CPF: ${discoveredMotherCpf} for ${actualMotherName} ` +
+                `(confidence: ${motherDiscovery.confidence}%)`
+            )
+            // Update mother name with the discovered variation if more complete
+            if (motherDiscovery.name && motherDiscovery.name.length > actualMotherName.length) {
+              actualMotherName = motherDiscovery.name
+            }
+          }
+        }
+
         // Add all siblings found by father
         fatherResults.forEach((person) => {
           if (person.CPF !== excludeCpf) {
@@ -223,32 +255,113 @@ export default class PersonDataAggregatorService {
       // Search by mother name (using the discovered name if found)
       if (actualMotherName && actualMotherName !== 'SEM INFORMAÇÃO') {
         logger.info(
-          `Searching siblings by mother: ${actualMotherName}${motherNameDiscoveredByFather ? ' (discovered via father)' : ''}`
+          `Searching siblings by mother: ${actualMotherName}${motherNameDiscoveredByFather ? ' (discovered via father)' : ''}` +
+            `${discoveredMotherCpf ? ` (CPF: ${discoveredMotherCpf})` : ''}`
         )
-        const motherResults = await this.findexClient.searchByMotherName(actualMotherName)
+
+        // If we discovered the mother's CPF, search by it for more accurate results
+        let motherResults: any[] = []
+        if (discoveredMotherCpf) {
+          const motherData = await this.findexClient.searchByCPF(discoveredMotherCpf)
+          if (motherData) {
+            // Get children from mother's data
+            const childrenFromMother = await this.findexClient.searchByMotherName(
+              motherData.NOME || actualMotherName
+            )
+            motherResults = childrenFromMother
+          }
+        } else {
+          motherResults = await this.findexClient.searchByMotherName(actualMotherName)
+        }
+
         logger.info(`Found ${motherResults.length} people with mother: ${actualMotherName}`)
 
         motherResults.forEach((person) => {
           if (person.CPF !== excludeCpf) {
-            if (siblingCandidates.has(person.CPF)) {
-              // Already found by father, mark as found by both
-              siblingCandidates.get(person.CPF).foundByMother = true
-            } else {
-              // New candidate found only by mother
-              siblingCandidates.set(person.CPF, {
-                cpf: person.CPF,
-                name: this.normalizeValue(person.NOME) || '',
-                birthDate: person.NASCIMENTO,
-                motherName: this.normalizeValue(person.MAE),
-                fatherName: this.normalizeValue(person.PAI),
-                foundByMother: true,
-                foundByFather: false,
-                rawData: person,
-              })
+            // Validate with dates if available
+            let isValidSibling = true
+            if (birthDate && person.NASCIMENTO) {
+              const validation = this.dateValidation.validateSiblingAge(
+                birthDate,
+                person.NASCIMENTO
+              )
+              isValidSibling = validation.isValid
+              if (!isValidSibling) {
+                logger.debug(
+                  `Skipping potential sibling due to age validation: ${validation.reason}`
+                )
+              }
+            }
+
+            if (isValidSibling) {
+              if (siblingCandidates.has(person.CPF)) {
+                // Already found by father, mark as found by both
+                siblingCandidates.get(person.CPF).foundByMother = true
+              } else {
+                // New candidate found only by mother
+                siblingCandidates.set(person.CPF, {
+                  cpf: person.CPF,
+                  name: this.normalizeValue(person.NOME) || '',
+                  birthDate: person.NASCIMENTO,
+                  motherName: this.normalizeValue(person.MAE),
+                  fatherName: this.normalizeValue(person.PAI),
+                  foundByMother: true,
+                  foundByFather: false,
+                  rawData: person,
+                })
+              }
             }
           }
         })
         logger.info(`Total candidates after mother search: ${siblingCandidates.size}`)
+      }
+
+      // If no mother name but we have father, try to discover mother through father's other children
+      if (
+        (!actualMotherName || actualMotherName === 'SEM INFORMAÇÃO') &&
+        fatherName &&
+        siblingCandidates.size > 0
+      ) {
+        logger.info('Attempting to discover mother through siblings found by father')
+        const siblingMotherNames = new Map<string, number>()
+
+        for (const candidate of siblingCandidates.values()) {
+          if (candidate.motherName) {
+            siblingMotherNames.set(
+              candidate.motherName,
+              (siblingMotherNames.get(candidate.motherName) || 0) + 1
+            )
+          }
+        }
+
+        // Find the most common mother name among siblings
+        if (siblingMotherNames.size > 0) {
+          const [mostCommonMotherName, count] = Array.from(siblingMotherNames.entries()).sort(
+            (a, b) => b[1] - a[1]
+          )[0]
+
+          if (count >= 2) {
+            // At least 2 siblings share this mother
+            logger.info(
+              `Discovered likely mother name: ${mostCommonMotherName} (shared by ${count} siblings)`
+            )
+            actualMotherName = mostCommonMotherName
+
+            // Try to find mother's CPF
+            const motherDiscovery = await this.cpfDiscovery.discoverParentCpf({
+              personName: mostCommonMotherName,
+              spouseName: fatherName,
+              childrenNames: Array.from(siblingCandidates.values())
+                .filter((s) => s.motherName === mostCommonMotherName)
+                .map((s) => s.name),
+            })
+
+            if (motherDiscovery) {
+              discoveredMotherCpf = motherDiscovery.cpf
+              logger.info(`Discovered mother's CPF through siblings: ${discoveredMotherCpf}`)
+            }
+          }
+        }
       }
 
       // Validate siblings
@@ -303,22 +416,45 @@ export default class PersonDataAggregatorService {
         }
       }
 
+      // Include discovered parent CPFs in relatives if found
+      const discoveredRelatives: Array<{ cpf: string; name: string; relationship: string }> = []
+
+      if (discoveredMotherCpf && actualMotherName) {
+        discoveredRelatives.push({
+          cpf: discoveredMotherCpf,
+          name: actualMotherName,
+          relationship: 'MAE',
+        })
+      }
+
+      if (discoveredFatherCpf && fatherName) {
+        discoveredRelatives.push({
+          cpf: discoveredFatherCpf,
+          name: fatherName,
+          relationship: 'PAI',
+        })
+      }
+
       return {
         person: personData
           ? {
               full_name: this.normalizeValue(personData.NOME) || undefined,
               national_id: personData.CPF,
-              mother_name: this.normalizeValue(personData.MAE || motherName) || undefined,
+              mother_name:
+                actualMotherName || this.normalizeValue(personData.MAE || motherName) || undefined,
               father_name: this.normalizeValue(personData.PAI || fatherName) || undefined,
               gender: personData.SEXO as 'M' | 'F' | null,
               birth_date: personBirthDate || undefined,
             }
           : {},
-        relatives: [],
+        relatives: discoveredRelatives,
         siblings: topSiblings,
         additionalInfo: {
           hasMultipleSources: !!(motherName && fatherName),
-          sourcesUsed: ['parent_search_validated'],
+          sourcesUsed: [
+            'parent_search_validated',
+            ...(discoveredMotherCpf ? ['cpf_discovery'] : []),
+          ],
           dataQuality: this.assessDataQualityFromSiblings(topSiblings),
         },
       }
@@ -670,5 +806,104 @@ export default class PersonDataAggregatorService {
     }
 
     return connections
+  }
+
+  /**
+   * Discover missing parent CPFs using available information
+   */
+  async discoverMissingParentCpfs(
+    currentData: AggregatedPersonData,
+    context: AggregationContext
+  ): Promise<AggregatedPersonData> {
+    const discoveredRelatives: Array<{ cpf: string; name: string; relationship: string }> = []
+
+    try {
+      // Check if we need to discover mother's CPF
+      const motherName = currentData.person.mother_name || context.motherName
+      const fatherName = currentData.person.father_name || context.fatherName
+      const hasMotherCpf = currentData.relatives.some(
+        (r) => r.relationship === 'MAE' && r.cpf && r.cpf !== 'SEM INFORMAÇÃO'
+      )
+
+      if (motherName && !hasMotherCpf) {
+        logger.info(`Attempting to discover CPF for mother: ${motherName}`)
+
+        const motherDiscovery = await this.cpfDiscovery.discoverParentCpf({
+          personName: motherName,
+          spouseName: fatherName,
+          childrenNames: [
+            ...(context.fullName ? [context.fullName] : []),
+            ...currentData.siblings.map((s) => s.name),
+          ].filter(Boolean),
+          birthDate: context.birthDate,
+        })
+
+        if (motherDiscovery && motherDiscovery.confidence >= 70) {
+          discoveredRelatives.push({
+            cpf: motherDiscovery.cpf,
+            name: motherDiscovery.name || motherName,
+            relationship: 'MAE',
+          })
+          logger.info(
+            `Successfully discovered mother's CPF: ${motherDiscovery.cpf} ` +
+              `(confidence: ${motherDiscovery.confidence}%)`
+          )
+        }
+      }
+
+      // Check if we need to discover father's CPF
+      const hasFatherCpf = currentData.relatives.some(
+        (r) => r.relationship === 'PAI' && r.cpf && r.cpf !== 'SEM INFORMAÇÃO'
+      )
+
+      if (fatherName && !hasFatherCpf) {
+        logger.info(`Attempting to discover CPF for father: ${fatherName}`)
+
+        const fatherDiscovery = await this.cpfDiscovery.discoverParentCpf({
+          personName: fatherName,
+          spouseName: motherName,
+          childrenNames: [
+            ...(context.fullName ? [context.fullName] : []),
+            ...currentData.siblings.map((s) => s.name),
+          ].filter(Boolean),
+          birthDate: context.birthDate,
+        })
+
+        if (fatherDiscovery && fatherDiscovery.confidence >= 70) {
+          discoveredRelatives.push({
+            cpf: fatherDiscovery.cpf,
+            name: fatherDiscovery.name || fatherName,
+            relationship: 'PAI',
+          })
+          logger.info(
+            `Successfully discovered father's CPF: ${fatherDiscovery.cpf} ` +
+              `(confidence: ${fatherDiscovery.confidence}%)`
+          )
+        }
+      }
+
+      return {
+        person: currentData.person,
+        relatives: discoveredRelatives,
+        siblings: [],
+        additionalInfo: {
+          hasMultipleSources: false,
+          sourcesUsed: ['cpf_discovery'],
+          dataQuality: discoveredRelatives.length > 0 ? 'medium' : 'low',
+        },
+      }
+    } catch (error) {
+      logger.error('Failed to discover missing parent CPFs', error)
+      return {
+        person: currentData.person,
+        relatives: [],
+        siblings: [],
+        additionalInfo: {
+          hasMultipleSources: false,
+          sourcesUsed: [],
+          dataQuality: 'low',
+        },
+      }
+    }
   }
 }

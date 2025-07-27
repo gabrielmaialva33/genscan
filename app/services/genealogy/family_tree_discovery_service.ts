@@ -5,6 +5,7 @@ import FindexCacheService from '#services/integrations/findex_cache_service'
 import FindexMapperService from '#services/genealogy/findex_mapper_service'
 import RelationshipInferenceService from '#services/genealogy/relationship_inference_service'
 import PersonDataAggregatorService from '#services/genealogy/person_data_aggregator_service'
+import CpfDiscoveryService from '#services/genealogy/cpf_discovery_service'
 import PeopleRepository from '#repositories/people_repository'
 import PersonDetail from '#models/person_detail'
 import RelationshipsRepository from '#repositories/relationships_repository'
@@ -20,7 +21,7 @@ interface TreeNode {
   processed: boolean
   parent_cpf?: string
   relationship_to_parent?: string // Original API relationship (MAE, PAI, FILHA(O), etc)
-  source?: 'cpf_search' | 'mother_search' | 'relative'
+  source?: 'cpf_search' | 'mother_search' | 'relative' | 'discovered'
 }
 
 interface FamilyTreeDiscoveryPayload {
@@ -53,6 +54,7 @@ export default class FamilyTreeDiscoveryService {
     private findexMapper: FindexMapperService,
     private relationshipInference: RelationshipInferenceService,
     private personDataAggregator: PersonDataAggregatorService,
+    private cpfDiscovery: CpfDiscoveryService,
     private peopleRepository: PeopleRepository,
     private relationshipsRepository: RelationshipsRepository,
     private importsRepository: DataImportsRepository
@@ -158,6 +160,8 @@ export default class FamilyTreeDiscoveryService {
                     relative.api_cpf !== 'SEM INFORMAÇÃO' &&
                     !processedCPFs.has(relative.api_cpf)
                   ) {
+                    // For now, add all relatives - date validation can be done later
+                    // when we have more complete data about the relative
                     queue.push({
                       cpf: relative.api_cpf,
                       name: relative.api_name,
@@ -167,6 +171,42 @@ export default class FamilyTreeDiscoveryService {
                       relationship_to_parent: relative.api_relationship,
                       source: 'relative',
                     })
+                  } else if (
+                    !cleanCpf &&
+                    relative.api_name &&
+                    relative.api_name !== 'SEM INFORMAÇÃO' &&
+                    node.level < maxDepth - 1 // Still have depth to explore
+                  ) {
+                    // Try to discover CPF for relatives without CPF (like grandparents)
+                    logger.info(
+                      `Attempting to discover CPF for ${relative.api_name} (${relative.api_relationship})`
+                    )
+
+                    const discoveryContext = {
+                      personName: relative.api_name,
+                      childrenNames: [result.name],
+                      birthDate: result.birthDate,
+                    }
+
+                    const discoveredCpf =
+                      await this.cpfDiscovery.discoverParentCpf(discoveryContext)
+
+                    if (discoveredCpf && discoveredCpf.confidence >= 75) {
+                      logger.info(
+                        `Successfully discovered CPF ${discoveredCpf.cpf} for ${relative.api_name} ` +
+                          `(confidence: ${discoveredCpf.confidence}%)`
+                      )
+
+                      queue.push({
+                        cpf: discoveredCpf.cpf,
+                        name: discoveredCpf.name,
+                        level: node.level + 1,
+                        processed: false,
+                        parent_cpf: node.cpf,
+                        relationship_to_parent: relative.api_relationship,
+                        source: 'discovered',
+                      })
+                    }
                   }
                 }
               }
@@ -310,6 +350,7 @@ export default class FamilyTreeDiscoveryService {
   ): Promise<{
     personId: string
     name: string
+    birthDate?: string
     isNew: boolean
     isDuplicate: boolean
     relatives?: IFamilyDiscovery.RelativeMapping[]
@@ -435,6 +476,7 @@ export default class FamilyTreeDiscoveryService {
       return {
         personId: person.id,
         name: person.full_name || personData.full_name || node.name,
+        birthDate: person.birth_date?.toISODate() || undefined,
         isNew,
         isDuplicate,
         relatives,
