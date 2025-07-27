@@ -2,6 +2,9 @@ import { DateTime } from 'luxon'
 import { BaseModel, belongsTo, column, hasMany, SnakeCaseNamingStrategy } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
+import FamilyTreeMember from '#models/family_tree_member'
+import Relationship from '#models/relationship'
+import Person from '#models/person'
 
 export default class FamilyTree extends BaseModel {
   static table = 'family_trees'
@@ -69,12 +72,15 @@ export default class FamilyTree extends BaseModel {
   })
   declare owner: BelongsTo<typeof User>
 
-  // Will be added after creating the other models
-  // @hasMany(() => FamilyTreeMember)
-  // declare members: HasMany<typeof FamilyTreeMember>
+  @hasMany(() => FamilyTreeMember, {
+    foreignKey: 'family_tree_id',
+  })
+  declare members: HasMany<typeof FamilyTreeMember>
 
-  // @hasMany(() => Relationship)
-  // declare relationships: HasMany<typeof Relationship>
+  @hasMany(() => Relationship, {
+    foreignKey: 'family_tree_id',
+  })
+  declare relationships: HasMany<typeof Relationship>
 
   /**
    * ------------------------------------------------------
@@ -118,5 +124,23 @@ export default class FamilyTree extends BaseModel {
   async incrementMembersCount(): Promise<void> {
     this.members_count += 1
     await this.save()
+  }
+
+  async getPeople() {
+    // Query relationships directly if not preloaded
+    const relationships = this.$preloaded.relationships
+      ? this.relationships
+      : await Relationship.query().where('family_tree_id', this.id).exec()
+
+    const personIds = new Set<string>()
+
+    relationships.forEach((rel) => {
+      personIds.add(rel.person_id)
+      personIds.add(rel.related_person_id)
+    })
+
+    if (personIds.size === 0) return []
+
+    return Person.query().whereIn('id', Array.from(personIds))
   }
 }

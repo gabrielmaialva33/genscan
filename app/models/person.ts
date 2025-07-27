@@ -9,6 +9,9 @@ import {
 } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
+import PersonDetail from '#models/person_detail'
+import Relationship from '#models/relationship'
+import FamilyTreeMember from '#models/family_tree_member'
 
 export default class Person extends BaseModel {
   static table = 'people'
@@ -64,6 +67,19 @@ export default class Person extends BaseModel {
   @column.dateTime()
   declare deleted_at: DateTime | null
 
+  @column()
+  declare mother_name: string | null
+
+  @column()
+  declare father_name: string | null
+
+  /**
+   * Virtual property - computed from death_date
+   */
+  get is_living(): boolean {
+    return !this.death_date
+  }
+
   /**
    * ------------------------------------------------------
    * Relationships
@@ -74,12 +90,25 @@ export default class Person extends BaseModel {
   })
   declare creator: BelongsTo<typeof User>
 
-  // Will be added after creating the other models
-  // @hasMany(() => Relationship, { foreignKey: 'person_id' })
-  // declare relationships: HasMany<typeof Relationship>
+  @hasMany(() => Relationship, {
+    foreignKey: 'person_id',
+  })
+  declare relationships: HasMany<typeof Relationship>
 
-  // @hasOne(() => PersonDetail, { foreignKey: 'person_id' })
-  // declare details: HasOne<typeof PersonDetail>
+  @hasMany(() => Relationship, {
+    foreignKey: 'related_person_id',
+  })
+  declare relatedRelationships: HasMany<typeof Relationship>
+
+  @hasOne(() => PersonDetail, {
+    foreignKey: 'person_id',
+  })
+  declare details: HasOne<typeof PersonDetail>
+
+  @hasMany(() => FamilyTreeMember, {
+    foreignKey: 'person_id',
+  })
+  declare familyTreeMemberships: HasMany<typeof FamilyTreeMember>
 
   /**
    * ------------------------------------------------------
