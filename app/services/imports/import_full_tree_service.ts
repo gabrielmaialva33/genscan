@@ -1,6 +1,5 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
-import { DateTime } from 'luxon'
 import FindexClient from '#services/integrations/findex_client'
 import FindexCacheService from '#services/integrations/findex_cache_service'
 import FindexMapperService from '#services/imports/findex_mapper_service'
@@ -8,7 +7,6 @@ import RelationshipInferenceService from '#services/imports/relationship_inferen
 import DataEnrichmentService from '#services/imports/data_enrichment_service'
 import PeopleRepository from '#repositories/people_repository'
 import PersonDetail from '#models/person_detail'
-import FamilyTreeMember from '#models/family_tree_member'
 import RelationshipsRepository from '#repositories/relationships_repository'
 import DataImportsRepository from '#repositories/data_imports_repository'
 import IImport from '#interfaces/import_interface'
@@ -396,22 +394,8 @@ export default class ImportFullTreeService {
       // Store mapping
       cpfToPersonId.set(node.cpf, person.id)
 
-      // Associate person with family tree if not already
-      const existingMembership = await FamilyTreeMember.query()
-        .where('family_tree_id', familyTreeId)
-        .where('person_id', person.id)
-        .first()
-
-      if (!existingMembership) {
-        await FamilyTreeMember.create({
-          family_tree_id: familyTreeId,
-          person_id: person.id,
-          user_id: userId,
-          role: 'viewer',
-          invited_by: userId,
-          accepted_at: DateTime.now(),
-        })
-      }
+      // Note: People are associated with family trees through the relationships table,
+      // not through FamilyTreeMember. FamilyTreeMember is for user access control only.
 
       // Convert enriched relatives to import format
       const relatives = enrichedData.relatives.map((rel) => ({

@@ -149,13 +149,26 @@ export default class FindexMapperService {
   /**
    * Map gender from API format
    */
-  private mapGender(sexo: string): 'M' | 'F' | null {
-    switch (sexo) {
+  private mapGender(sexo: string | null | undefined): 'M' | 'F' | 'O' | null {
+    if (!sexo || sexo === 'SEM INFORMAÇÃO') return null
+
+    const upperSexo = sexo.toUpperCase().trim()
+    switch (upperSexo) {
       case 'M':
+      case 'MASCULINO':
         return 'M'
       case 'F':
+      case 'FEMININO':
         return 'F'
+      case 'O':
+      case 'OUTRO':
+        return 'O'
       default:
+        // Log unexpected gender values for debugging
+        if (upperSexo && upperSexo !== 'null') {
+          console.warn(`Unexpected gender value from API: '${sexo}', mapping to 'O'`)
+        }
+        // Return null for empty/invalid values to maintain data integrity
         return null
     }
   }
