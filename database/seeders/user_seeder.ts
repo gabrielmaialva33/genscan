@@ -1,12 +1,99 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { UserFactory } from '#database/factories/user_factory'
+import User from '#models/user'
+import hash from '@adonisjs/core/services/hash'
+import logger from '@adonisjs/core/services/logger'
+import { DateTime } from 'luxon'
 
-export default class extends BaseSeeder {
-  static environment = ['development']
+export default class UserSeeder extends BaseSeeder {
+  static environment = ['development', 'testing']
 
   async run() {
-    await UserFactory.merge({
-      password: '123456',
-    }).createMany(10)
+    // Check if users already exist
+    const existingUsers = await User.query().count('* as total')
+    if (existingUsers[0].$extras.total > 0) {
+      logger.info('Users already seeded, skipping...')
+      return
+    }
+
+    // Create admin user
+    const adminUser = await User.create({
+      full_name: 'Administrator',
+      email: 'admin@genscan.com',
+      username: 'admin',
+      password: await hash.make('Admin@123'),
+      is_deleted: false,
+      metadata: {
+        email_verified: true,
+        email_verified_at: DateTime.now().toISO(),
+        email_verification_token: null,
+        email_verification_sent_at: null,
+      },
+    })
+
+    logger.debug(`  ✓ Created admin user: ${adminUser.email}`)
+
+    // Create regular verified users
+    const regularUsers = [
+      {
+        full_name: 'João Silva',
+        email: 'joao.silva@example.com',
+        username: 'joaosilva',
+        password: await hash.make('Password@123'),
+        is_deleted: false,
+        metadata: {
+          email_verified: true,
+          email_verified_at: DateTime.now().toISO(),
+          email_verification_token: null,
+          email_verification_sent_at: null,
+        },
+      },
+      {
+        full_name: 'Maria Santos',
+        email: 'maria.santos@example.com',
+        username: 'mariasantos',
+        password: await hash.make('Password@123'),
+        is_deleted: false,
+        metadata: {
+          email_verified: true,
+          email_verified_at: DateTime.now().toISO(),
+          email_verification_token: null,
+          email_verification_sent_at: null,
+        },
+      },
+    ]
+
+    for (const userData of regularUsers) {
+      const user = await User.create(userData)
+      logger.debug(`  ✓ Created user: ${user.email}`)
+    }
+
+    // Create test users
+    const testUser1 = await UserFactory.merge({
+      full_name: 'Test User 1',
+      email: 'teste1@example.com',
+      username: 'teste1',
+      password: await hash.make('Test@123'),
+    })
+      .apply('verified')
+      .create()
+
+    logger.debug(`  ✓ Created test user: ${testUser1.email}`)
+
+    const testUser2 = await UserFactory.merge({
+      full_name: 'Test User 2',
+      email: 'teste2@example.com',
+      username: 'teste2',
+      password: await hash.make('Test@123'),
+    }).create()
+
+    logger.debug(`  ✓ Created test user: ${testUser2.email} (unverified)`)
+
+    // Create additional random users for testing
+    const randomUsers = await UserFactory.merge({
+      password: await hash.make('Random@123'),
+    }).createMany(5)
+
+    logger.debug(`  ✓ Created ${randomUsers.length} additional random users`)
   }
 }

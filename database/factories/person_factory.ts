@@ -27,9 +27,9 @@ export const PersonFactory = factory
   })
   .state('deceased', (person, { faker }) => {
     person.death_date = DateTime.fromJSDate(
-      faker.date.between({ 
-        from: person.birth_date ? person.birth_date.toJSDate() : new Date(1900, 0, 1), 
-        to: new Date() 
+      faker.date.between({
+        from: person.birth_date ? person.birth_date.toJSDate() : new Date(1900, 0, 1),
+        to: new Date(),
       })
     )
     person.death_place = `${faker.location.city()}, ${faker.location.state()}`
