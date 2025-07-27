@@ -109,6 +109,8 @@ namespace IPerson {
       voter_id?: string
       passport?: string
       pis?: string
+      zone?: string
+      section?: string
     } | null
     api_data?: Record<string, any> | null
   }
@@ -154,6 +156,8 @@ namespace IPerson {
       voter_id?: string
       passport?: string
       pis?: string
+      zone?: string
+      section?: string
     } | null
     api_data?: Record<string, any> | null
   }

@@ -72,23 +72,24 @@ export default class FindexMapperService {
     }))
 
     const emails = data.EMAIL.filter(
-      (email) => email.EMAIL && email.EMAIL !== 'SEM INFORMAÇÃO'
+      (email) => email.EMAIL && email.EMAIL !== 'SEM INFORMAÇÃO' && email.EMAIL.includes('@')
     ).map((email, index) => ({
-      email: email.EMAIL.toLowerCase(),
+      email: email.EMAIL.toLowerCase().trim(),
       is_primary: index === 0,
     }))
 
-    // Try to extract address information
+    // Try to extract address information - handle multiple addresses
     const addresses = data.ENDERECO.filter(
       (addr) => addr.LOGRADOURO && addr.LOGRADOURO !== 'SEM INFORMAÇÃO'
-    ).map((addr) => ({
-      type: 'home' as const,
+    ).map((addr, index) => ({
+      type: (index === 0 ? 'home' : index === 1 ? 'work' : 'other') as 'home' | 'work' | 'other',
       street: addr.LOGRADOURO || '',
-      number: addr.LOGRADOURO_NUMERO || 's/n',
-      complement: addr.COMPLEMENTO !== 'SEM INFORMAÇÃO' ? addr.COMPLEMENTO : undefined,
-      neighborhood: addr.BAIRRO || '',
-      city: addr.CIDADE || '',
-      state: addr.UF || '',
+      number: addr.LOGRADOURO_NUMERO !== 'SEM INFORMAÇÃO' ? addr.LOGRADOURO_NUMERO : 's/n',
+      complement:
+        addr.COMPLEMENTO && addr.COMPLEMENTO !== 'SEM INFORMAÇÃO' ? addr.COMPLEMENTO : undefined,
+      neighborhood: addr.BAIRRO !== 'SEM INFORMAÇÃO' ? addr.BAIRRO : '',
+      city: addr.CIDADE !== 'SEM INFORMAÇÃO' ? addr.CIDADE : '',
+      state: addr.UF !== 'SEM INFORMAÇÃO' ? addr.UF : '',
       country: 'Brasil',
       zip_code: this.normalizeCEP(addr.CEP) || '',
     }))
@@ -109,16 +110,25 @@ export default class FindexMapperService {
       marital_status: this.normalizeMaritalStatus(data.ESTADO_CIVIL),
       documents: {
         cpf: data.CPF,
-        rg: data.RG !== 'SEM INFORMAÇÃO' ? data.RG : undefined,
-        voter_id: data.TITULO_ELEITOR !== 'SEM INFORMAÇÃO' ? data.TITULO_ELEITOR : undefined,
-        pis: data.PIS !== 'SEM INFORMAÇÃO' ? data.PIS : undefined,
+        rg: data.RG && data.RG !== 'SEM INFORMAÇÃO' ? data.RG : undefined,
+        voter_id:
+          data.TITULO_ELEITOR && data.TITULO_ELEITOR !== 'SEM INFORMAÇÃO'
+            ? data.TITULO_ELEITOR
+            : undefined,
+        pis: data.PIS && data.PIS !== 'SEM INFORMAÇÃO' ? data.PIS : undefined,
+        zone: data.ZONA && data.ZONA !== 'SEM INFORMAÇÃO' ? data.ZONA : undefined,
+        section: data.SECAO && data.SECAO !== 'SEM INFORMAÇÃO' ? data.SECAO : undefined,
       },
       api_data: {
-        poder_aquisitivo: data.PODER_AQUISITIVO,
-        fx_poder_aquisitivo: data.FX_PODER_AQUISITIVO,
-        csb8: data.CSB8,
-        csb8_faixa: data.CSB8_FAIXA,
-        peso: data.PESO,
+        poder_aquisitivo:
+          data.PODER_AQUISITIVO !== 'SEM INFORMAÇÃO' ? data.PODER_AQUISITIVO : undefined,
+        fx_poder_aquisitivo:
+          data.FX_PODER_AQUISITIVO !== 'SEM INFORMAÇÃO' ? data.FX_PODER_AQUISITIVO : undefined,
+        csb8: data.CSB8 !== 'SEM INFORMAÇÃO' ? data.CSB8 : undefined,
+        csb8_faixa: data.CSB8_FAIXA !== 'SEM INFORMAÇÃO' ? data.CSB8_FAIXA : undefined,
+        csba: data.CSBA !== 'SEM INFORMAÇÃO' ? data.CSBA : undefined,
+        csba_faixa: data.CSBA_FAIXA !== 'SEM INFORMAÇÃO' ? data.CSBA_FAIXA : undefined,
+        peso: data.PESO !== 'SEM INFORMAÇÃO' ? data.PESO : undefined,
       },
     }
   }
@@ -152,8 +162,11 @@ export default class FindexMapperService {
 
   /**
    * Map relationship type from Portuguese to system format
+   * Note: This returns the relationship from the perspective of the API response
+   * For example: If API says person B is "MAE" (mother) of person A,
+   * then from A's perspective, B is their 'parent'
    */
-  private mapRelationshipType(
+  mapRelationshipType(
     vinculo: string
   ):
     | 'parent'
@@ -166,17 +179,58 @@ export default class FindexMapperService {
     | 'nephew_niece'
     | 'cousin' {
     const mapping: Record<string, IImport.RelativeMapping['relationship_type']> = {
+      // Parents
       'MAE': 'parent',
+      'MÃE': 'parent',
       'PAI': 'parent',
+
+      // Children
+      'FILHA': 'child',
+      'FILHO': 'child',
+      'FILHA(O)': 'child',
+
+      // Siblings
+      'IRMA': 'sibling',
+      'IRMÃO': 'sibling',
+      'IRMÃ': 'sibling',
       'IRMA(O)': 'sibling',
+
+      // Grandparents
       'AVO': 'grandparent',
+      'AVÔ': 'grandparent',
+      'AVÓ': 'grandparent',
       'AVO(A)': 'grandparent',
+
+      // Grandchildren
+      'NETO': 'grandchild',
+      'NETA': 'grandchild',
+      'NETO(A)': 'grandchild',
+
+      // Uncles/Aunts
+      'TIO': 'uncle_aunt',
+      'TIA': 'uncle_aunt',
       'TIA(O)': 'uncle_aunt',
-      'PRIMA(O)': 'cousin',
+
+      // Nephews/Nieces
+      'SOBRINHO': 'nephew_niece',
+      'SOBRINHA': 'nephew_niece',
       'SOBRINHA(O)': 'nephew_niece',
+
+      // Cousins
+      'PRIMO': 'cousin',
+      'PRIMA': 'cousin',
+      'PRIMA(O)': 'cousin',
+
+      // Spouses
+      'ESPOSO': 'spouse',
+      'ESPOSA': 'spouse',
+      'CÔNJUGE': 'spouse',
+      'MARIDO': 'spouse',
+      'MULHER': 'spouse',
     }
 
-    return mapping[vinculo] || 'cousin' // Default to cousin if unknown
+    const normalized = vinculo.toUpperCase().trim()
+    return mapping[normalized] || 'cousin' // Default to cousin if unknown
   }
 
   /**

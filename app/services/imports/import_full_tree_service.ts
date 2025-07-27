@@ -1,13 +1,18 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
+import { DateTime } from 'luxon'
 import FindexClient from '#services/integrations/findex_client'
 import FindexCacheService from '#services/integrations/findex_cache_service'
 import FindexMapperService from '#services/imports/findex_mapper_service'
+import RelationshipInferenceService from '#services/imports/relationship_inference_service'
+import DataEnrichmentService from '#services/imports/data_enrichment_service'
 import PeopleRepository from '#repositories/people_repository'
 import PersonDetail from '#models/person_detail'
+import FamilyTreeMember from '#models/family_tree_member'
 import RelationshipsRepository from '#repositories/relationships_repository'
 import DataImportsRepository from '#repositories/data_imports_repository'
 import IImport from '#interfaces/import_interface'
+import IPerson from '#interfaces/person_interface'
 
 interface TreeNode {
   cpf: string
@@ -16,6 +21,8 @@ interface TreeNode {
   person_id?: string
   processed: boolean
   parent_cpf?: string
+  relationship_to_parent?: string // Original API relationship (MAE, PAI, FILHA(O), etc)
+  source?: 'cpf_search' | 'mother_search' | 'relative'
 }
 
 interface ImportFullTreePayload {
@@ -46,6 +53,8 @@ export default class ImportFullTreeService {
     private findexClient: FindexClient,
     private cacheService: FindexCacheService,
     private findexMapper: FindexMapperService,
+    private relationshipInference: RelationshipInferenceService,
+    private dataEnrichment: DataEnrichmentService,
     private peopleRepository: PeopleRepository,
     private relationshipsRepository: RelationshipsRepository,
     private importsRepository: DataImportsRepository
@@ -143,27 +152,96 @@ export default class ImportFullTreeService {
               // Add relatives to queue if within depth limit
               if (node.level < maxDepth && result.relatives) {
                 for (const relative of result.relatives) {
-                  if (!processedCPFs.has(relative.api_cpf)) {
+                  // Validate CPF before adding to queue
+                  const cleanCpf = relative.api_cpf?.replace(/\D/g, '')
+                  if (
+                    cleanCpf &&
+                    cleanCpf.length === 11 &&
+                    relative.api_cpf !== 'SEM INFORMAÇÃO' &&
+                    !processedCPFs.has(relative.api_cpf)
+                  ) {
                     queue.push({
                       cpf: relative.api_cpf,
                       name: relative.api_name,
                       level: node.level + 1,
                       processed: false,
                       parent_cpf: node.cpf,
+                      relationship_to_parent: relative.api_relationship,
+                      source: 'relative',
                     })
                   }
                 }
               }
 
-              // Create relationships
+              // Add siblings to queue if within depth limit
+              if (node.level < maxDepth && result.siblings) {
+                for (const sibling of result.siblings) {
+                  const cleanCpf = sibling.cpf?.replace(/\D/g, '')
+                  if (cleanCpf && cleanCpf.length === 11 && !processedCPFs.has(sibling.cpf)) {
+                    queue.push({
+                      cpf: sibling.cpf,
+                      name: sibling.name,
+                      level: node.level, // Siblings are at same level
+                      processed: false,
+                      parent_cpf: node.cpf,
+                      relationship_to_parent: 'SIBLING',
+                      source: 'mother_search',
+                    })
+                  }
+                }
+              }
+
+              // Create relationships with intelligent mapping
               if (node.parent_cpf && cpfToPersonId.has(node.parent_cpf)) {
                 const parentPersonId = cpfToPersonId.get(node.parent_cpf)!
-                await this.createRelationshipIfNeeded(
-                  parentPersonId,
-                  result.personId,
-                  familyTreeId,
-                  progress
-                )
+
+                if (node.relationship_to_parent === 'SIBLING') {
+                  // Handle sibling relationships
+                  await this.createRelationshipIfNeeded(
+                    parentPersonId,
+                    result.personId,
+                    familyTreeId,
+                    progress,
+                    'sibling'
+                  )
+                } else if (node.relationship_to_parent) {
+                  // Use inference service to determine correct relationship
+                  const inference = this.relationshipInference.inferRelationship({
+                    fromPersonId: parentPersonId,
+                    toPersonId: result.personId,
+                    apiRelationship: node.relationship_to_parent,
+                    fromPersonName: treeStructure.find((n) => n.person_id === parentPersonId)?.name,
+                    toPersonName: result.name,
+                    levelDifference: Math.abs(
+                      node.level -
+                        (treeStructure.find((n) => n.person_id === parentPersonId)?.level || 0)
+                    ),
+                  })
+
+                  await this.createRelationshipIfNeeded(
+                    parentPersonId,
+                    result.personId,
+                    familyTreeId,
+                    progress,
+                    inference.forward
+                  )
+                }
+              }
+
+              // Create sibling relationships discovered through mother search
+              if (result.siblings && result.siblings.length > 0) {
+                for (const sibling of result.siblings) {
+                  if (cpfToPersonId.has(sibling.cpf)) {
+                    const siblingPersonId = cpfToPersonId.get(sibling.cpf)!
+                    await this.createRelationshipIfNeeded(
+                      result.personId,
+                      siblingPersonId,
+                      familyTreeId,
+                      progress,
+                      'sibling'
+                    )
+                  }
+                }
               }
             }
           } catch (error) {
@@ -222,14 +300,14 @@ export default class ImportFullTreeService {
   }
 
   /**
-   * Process a single person node
+   * Process a single person node with data enrichment
    */
   private async processPerson(
     node: TreeNode,
-    _familyTreeId: string,
+    familyTreeId: string,
     userId: number,
     mergeDuplicates: boolean,
-    _processedCPFs: Set<string>,
+    processedCPFs: Set<string>,
     cpfToPersonId: Map<string, string>
   ): Promise<{
     personId: string
@@ -237,28 +315,36 @@ export default class ImportFullTreeService {
     isNew: boolean
     isDuplicate: boolean
     relatives?: IImport.RelativeMapping[]
+    siblings?: Array<{ cpf: string; name: string }>
   } | null> {
     try {
       // Check if already in our mapping
       if (cpfToPersonId.has(node.cpf)) {
+        const existingPerson = await this.peopleRepository.find(cpfToPersonId.get(node.cpf)!)
         return {
           personId: cpfToPersonId.get(node.cpf)!,
-          name: node.name,
+          name: existingPerson?.full_name || node.name,
           isNew: false,
           isDuplicate: false,
         }
       }
 
-      // Fetch data (will use cache if available)
-      const apiData = await this.findexClient.searchByCPF(node.cpf)
-      if (!apiData) {
-        logger.warn(`No data found for CPF ${node.cpf}`)
+      // Use data enrichment service to get comprehensive data
+      const enrichedData = await this.dataEnrichment.enrichPersonData({
+        cpf: node.cpf,
+        fullName: node.name,
+      })
+
+      if (!enrichedData || !enrichedData.person.full_name) {
+        logger.warn(`No enriched data found for CPF ${node.cpf}`)
         return null
       }
 
-      // Map data
-      const personData = this.findexMapper.mapToPerson(apiData)
-      personData.created_by = userId
+      // Prepare person data
+      const personData = {
+        ...enrichedData.person,
+        created_by: userId,
+      } as IPerson.CreatePayload
 
       // Check if person exists
       let person = await this.peopleRepository.findByNationalId(node.cpf)
@@ -287,36 +373,68 @@ export default class ImportFullTreeService {
           logger.info(`Created new person: ${person.id} (${personData.full_name})`)
         }
       } else {
-        // Update existing
+        // Update existing with enriched data
         await person.merge(personData).save()
-        logger.info(`Updated existing person: ${person.id}`)
+        logger.info(`Updated existing person: ${person.id} with enriched data`)
       }
 
-      // Create or update details
-      const detailsData = this.findexMapper.mapToPersonDetail(apiData, person.id)
-      const existingDetails = await PersonDetail.findBy('person_id', person.id)
+      // Create or update details if we have CPF data
+      if (enrichedData.additionalInfo.sourcesUsed.includes('cpf_search')) {
+        const apiData = await this.findexClient.searchByCPF(node.cpf)
+        if (apiData) {
+          const detailsData = this.findexMapper.mapToPersonDetail(apiData, person.id)
+          const existingDetails = await PersonDetail.findBy('person_id', person.id)
 
-      if (existingDetails) {
-        await existingDetails.merge(detailsData).save()
-      } else {
-        await PersonDetail.create(detailsData)
+          if (existingDetails) {
+            await existingDetails.merge(detailsData).save()
+          } else {
+            await PersonDetail.create(detailsData)
+          }
+        }
       }
 
       // Store mapping
       cpfToPersonId.set(node.cpf, person.id)
 
-      // Map relatives for queue
-      const relatives =
-        apiData.PARENTES && apiData.PARENTES.length > 0
-          ? this.findexMapper.mapRelatives(apiData.PARENTES)
-          : undefined
+      // Associate person with family tree if not already
+      const existingMembership = await FamilyTreeMember.query()
+        .where('family_tree_id', familyTreeId)
+        .where('person_id', person.id)
+        .first()
 
-      // Warm cache for relatives
-      if (relatives && relatives.length > 0) {
-        await this.cacheService.warmCacheForRelatives(
-          relatives.map((r) => ({ CPF_VINCULO: r.api_cpf }))
-        )
+      if (!existingMembership) {
+        await FamilyTreeMember.create({
+          family_tree_id: familyTreeId,
+          person_id: person.id,
+          user_id: userId,
+          role: 'viewer',
+          invited_by: userId,
+          accepted_at: DateTime.now(),
+        })
       }
+
+      // Convert enriched relatives to import format
+      const relatives = enrichedData.relatives.map((rel) => ({
+        api_cpf: rel.cpf,
+        api_name: rel.name,
+        api_relationship: rel.relationship,
+        is_new: !processedCPFs.has(rel.cpf),
+        relationship_type: this.findexMapper.mapRelationshipType(rel.relationship),
+      }))
+
+      // Warm cache for relatives and siblings
+      const allCpfs = [
+        ...enrichedData.relatives.map((r) => ({ CPF_VINCULO: r.cpf })),
+        ...enrichedData.siblings.map((s) => ({ CPF_VINCULO: s.cpf })),
+      ]
+      if (allCpfs.length > 0) {
+        await this.cacheService.warmCacheForRelatives(allCpfs)
+      }
+
+      logger.info(
+        `Processed ${person.full_name}: ${enrichedData.additionalInfo.sourcesUsed.join(', ')} sources, ` +
+          `${enrichedData.relatives.length} relatives, ${enrichedData.siblings.length} siblings`
+      )
 
       return {
         personId: person.id,
@@ -324,9 +442,13 @@ export default class ImportFullTreeService {
         isNew,
         isDuplicate,
         relatives,
+        siblings: enrichedData.siblings,
       }
     } catch (error) {
-      logger.error(`Failed to process person ${node.cpf}`, error)
+      logger.error(
+        `Failed to process person ${node.cpf}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error
+      )
       throw error
     }
   }
@@ -338,7 +460,17 @@ export default class ImportFullTreeService {
     personId1: string,
     personId2: string,
     familyTreeId: string,
-    progress: ImportFullTreeResult
+    progress: ImportFullTreeResult,
+    relationshipType?:
+      | 'parent'
+      | 'child'
+      | 'sibling'
+      | 'cousin'
+      | 'spouse'
+      | 'grandparent'
+      | 'grandchild'
+      | 'uncle_aunt'
+      | 'nephew_niece'
   ): Promise<void> {
     try {
       const existing = await this.relationshipsRepository.findBetweenPeople(
@@ -348,12 +480,12 @@ export default class ImportFullTreeService {
       )
 
       if (!existing) {
-        // We don't know the exact relationship type from tree traversal,
-        // so we'll use a generic 'relative' type
+        // Default to cousin if no specific type provided
+        const type = relationshipType || 'cousin'
         await this.relationshipsRepository.createBidirectional(
           personId1,
           personId2,
-          'relative' as any, // We'll need to infer this better
+          type,
           familyTreeId,
           'Imported from full tree scan'
         )
