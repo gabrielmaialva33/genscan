@@ -14,10 +14,10 @@ export function MagneticButton({
   strength = 0.5,
   onClick,
 }: MagneticButtonProps) {
-  const ref = useRef<HTMLButtonElement>(null)
+  const ref = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState({ x: 0, y: 0 })
 
-  const handleMouseMove = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return
 
     const rect = ref.current.getBoundingClientRect()
@@ -35,9 +35,9 @@ export function MagneticButton({
   }
 
   return (
-    <button
+    <div
       ref={ref}
-      className={cn('magnetic relative', className)}
+      className={cn('magnetic relative inline-block', className)}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
@@ -47,6 +47,6 @@ export function MagneticButton({
       }}
     >
       {children}
-    </button>
+    </div>
   )
 }
