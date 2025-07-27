@@ -31,7 +31,6 @@ export default class FindexMapperService {
       national_id: data.CPF,
       birth_date: birthDate,
       gender: this.mapGender(data.SEXO),
-      is_living: true, // Assume living unless we have death info
       mother_name: this.normalizeName(data.NOME_MAE),
       father_name: this.normalizeName(data.NOME_PAI),
     }
@@ -55,7 +54,6 @@ export default class FindexMapperService {
       national_id: data.CPF,
       birth_date: birthDate,
       gender: this.mapGender(data.SEXO),
-      is_living: true,
       mother_name: this.normalizeName(data.MAE),
       father_name: data.PAI ? this.normalizeName(data.PAI) : null,
     }
