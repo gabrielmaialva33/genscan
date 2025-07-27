@@ -1,28 +1,28 @@
 import DataImport from '#models/data_import'
 import LucidRepositoryInterface from '#shared/lucid/lucid_repository_interface'
 
-namespace IImport {
+namespace IFamilyDiscovery {
   /**
    * Repository interface
    */
   export interface Repository extends LucidRepositoryInterface<typeof DataImport> {
     /**
-     * Find imports by user
+     * Find discoveries by user
      */
     findByUserId(userId: number): Promise<DataImport[]>
 
     /**
-     * Find imports by family tree
+     * Find discoveries by family tree
      */
     findByFamilyTreeId(familyTreeId: string): Promise<DataImport[]>
 
     /**
-     * Get import with details
+     * Get discovery with details
      */
     findWithDetails(id: string): Promise<DataImport | null>
 
     /**
-     * Update import progress
+     * Update discovery progress
      */
     updateProgress(
       id: string,
@@ -36,43 +36,43 @@ namespace IImport {
   }
 
   /**
-   * Import from CPF payload
+   * Person discovery by CPF payload
    */
-  export interface ImportFromCPFPayload {
+  export interface PersonDiscoveryByCPFPayload {
     cpf: string
     family_tree_id: string
     user_id: number
-    import_relatives?: boolean
+    discover_relatives?: boolean
     merge_duplicates?: boolean
   }
 
   /**
-   * Import from mother name payload
+   * Children discovery by mother name payload
    */
-  export interface ImportFromMotherPayload {
+  export interface ChildrenByMotherPayload {
     mother_name: string
     family_tree_id: string
     user_id: number
-    import_relatives?: boolean
+    discover_relatives?: boolean
     merge_duplicates?: boolean
   }
 
   /**
-   * Import from parent name payload (mother or father)
+   * Children discovery by parent name payload (mother or father)
    */
-  export interface ImportFromParentPayload {
+  export interface ChildrenByParentPayload {
     parent_name: string
     family_tree_id: string
     user_id: number
-    import_relatives?: boolean
+    discover_relatives?: boolean
     merge_duplicates?: boolean
   }
 
   /**
-   * Import result
+   * Discovery result
    */
-  export interface ImportResult {
-    import_id: string
+  export interface DiscoveryResult {
+    discovery_id: string
     status: 'success' | 'partial' | 'failed'
     persons_created: number
     relationships_created: number
@@ -85,9 +85,9 @@ namespace IImport {
   }
 
   /**
-   * Import progress
+   * Discovery progress
    */
-  export interface ImportProgress {
+  export interface DiscoveryProgress {
     id: string
     status: 'pending' | 'processing' | 'success' | 'partial' | 'failed'
     total_to_process: number
@@ -120,4 +120,4 @@ namespace IImport {
   }
 }
 
-export default IImport
+export default IFamilyDiscovery

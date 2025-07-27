@@ -7,7 +7,7 @@ import {
   FindexRelative,
 } from '#interfaces/findex_interface'
 import IPerson from '#interfaces/person_interface'
-import IImport from '#interfaces/import_interface'
+import IFamilyDiscovery from '#interfaces/family_discovery_interface'
 
 /**
  * Service to map Findex API data to application models
@@ -149,7 +149,7 @@ export default class FindexMapperService {
   /**
    * Map Findex relatives to relationship mappings
    */
-  mapRelatives(relatives: FindexRelative[]): IImport.RelativeMapping[] {
+  mapRelatives(relatives: FindexRelative[]): IFamilyDiscovery.RelativeMapping[] {
     return relatives.map((relative) => ({
       api_cpf: relative.CPF_VINCULO,
       api_name: this.normalizeName(relative.NOME_VINCULO) || '',
@@ -204,7 +204,7 @@ export default class FindexMapperService {
     | 'uncle_aunt'
     | 'nephew_niece'
     | 'cousin' {
-    const mapping: Record<string, IImport.RelativeMapping['relationship_type']> = {
+    const mapping: Record<string, IFamilyDiscovery.RelativeMapping['relationship_type']> = {
       // Parents
       'MAE': 'parent',
       'MÃE': 'parent',

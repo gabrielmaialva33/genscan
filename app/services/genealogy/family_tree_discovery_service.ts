@@ -9,7 +9,7 @@ import PeopleRepository from '#repositories/people_repository'
 import PersonDetail from '#models/person_detail'
 import RelationshipsRepository from '#repositories/relationships_repository'
 import DataImportsRepository from '#repositories/data_imports_repository'
-import IImport from '#interfaces/import_interface'
+import IFamilyDiscovery from '#interfaces/family_discovery_interface'
 import IPerson from '#interfaces/person_interface'
 
 interface TreeNode {
@@ -32,7 +32,7 @@ interface FamilyTreeDiscoveryPayload {
   merge_duplicates?: boolean
 }
 
-interface FamilyTreeDiscoveryResult extends IImport.ImportResult {
+interface FamilyTreeDiscoveryResult extends IFamilyDiscovery.DiscoveryResult {
   total_levels: number
   tree_structure: TreeNode[]
 }
@@ -73,7 +73,7 @@ export default class FamilyTreeDiscoveryService {
 
     logger.info(`Starting full tree discovery from CPF ${cpf} with max depth ${maxDepth}`)
 
-    // Create import record
+    // Create discovery record
     const dataImport = await this.importsRepository.createImport(
       'national_id',
       `tree:${cpf}:depth${maxDepth}`,
@@ -92,7 +92,7 @@ export default class FamilyTreeDiscoveryService {
 
       // Track discovery progress
       const progress: FamilyTreeDiscoveryResult = {
-        import_id: dataImport.id,
+        discovery_id: dataImport.id,
         status: 'success',
         persons_created: 0,
         relationships_created: 0,
@@ -256,7 +256,7 @@ export default class FamilyTreeDiscoveryService {
           // Log progress periodically
           if (processedCPFs.size % 10 === 0) {
             logger.info(
-              `Tree import progress: ${processedCPFs.size} CPFs processed, ${queue.length} in queue`
+              `Tree discovery progress: ${processedCPFs.size} CPFs processed, ${queue.length} in queue`
             )
             await this.importsRepository.updateProgress(dataImport.id, progress)
           }
@@ -273,7 +273,7 @@ export default class FamilyTreeDiscoveryService {
         progress.status = progress.persons_created > 0 ? 'partial' : 'failed'
       }
 
-      // Update import record
+      // Update discovery record
       await this.importsRepository.updateProgress(dataImport.id, progress)
       await this.importsRepository.markAsCompleted(dataImport.id, {
         created_person_ids: Array.from(cpfToPersonId.values()),
@@ -281,14 +281,14 @@ export default class FamilyTreeDiscoveryService {
       })
 
       logger.info(
-        `Full tree import completed: ${progress.persons_created} created, ` +
+        `Full tree discovery completed: ${progress.persons_created} created, ` +
           `${progress.persons_updated} updated, ${progress.relationships_created} relationships, ` +
           `${progress.total_levels + 1} levels deep, ${processedCPFs.size} total people`
       )
 
       return progress
     } catch (error) {
-      logger.error('Full tree import failed', error)
+      logger.error('Full tree discovery failed', error)
       await this.importsRepository.markAsFailed(
         dataImport.id,
         error instanceof Error ? error.message : 'Unknown error'
@@ -312,7 +312,7 @@ export default class FamilyTreeDiscoveryService {
     name: string
     isNew: boolean
     isDuplicate: boolean
-    relatives?: IImport.RelativeMapping[]
+    relatives?: IFamilyDiscovery.RelativeMapping[]
     siblings?: Array<{ cpf: string; name: string }>
   } | null> {
     try {
@@ -409,7 +409,7 @@ export default class FamilyTreeDiscoveryService {
       // Note: People are associated with family trees through the relationships table,
       // not through FamilyTreeMember. FamilyTreeMember is for user access control only.
 
-      // Convert enriched relatives to import format
+      // Convert aggregated relatives to discovery format
       const relatives = enrichedData.relatives.map((rel) => ({
         api_cpf: rel.cpf,
         api_name: rel.name,
@@ -483,7 +483,7 @@ export default class FamilyTreeDiscoveryService {
           personId2,
           type,
           familyTreeId,
-          'Imported from full tree scan'
+          'Discovered from full tree scan'
         )
         progress.relationships_created += 2 // Bidirectional
       }

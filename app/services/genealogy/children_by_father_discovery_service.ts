@@ -4,13 +4,13 @@ import FindexClient from '#services/integrations/findex_client'
 import FindexMapperService from '#services/genealogy/findex_mapper_service'
 import PeopleRepository from '#repositories/people_repository'
 import DataImportsRepository from '#repositories/data_imports_repository'
-import IImport from '#interfaces/import_interface'
+import IFamilyDiscovery from '#interfaces/family_discovery_interface'
 
 /**
- * Service to import people data by father's name using Findex API
+ * Service to discover children by father's name using Findex API
  */
 @inject()
-export default class ImportFromFatherService {
+export default class ChildrenByFatherDiscoveryService {
   constructor(
     private findexClient: FindexClient,
     private findexMapper: FindexMapperService,
@@ -21,7 +21,9 @@ export default class ImportFromFatherService {
   /**
    * Import people by father's name
    */
-  async run(payload: IImport.ImportFromParentPayload): Promise<IImport.ImportResult> {
+  async run(
+    payload: IFamilyDiscovery.ChildrenByParentPayload
+  ): Promise<IFamilyDiscovery.DiscoveryResult> {
     const {
       parent_name: fatherName,
       family_tree_id: familyTreeId,
@@ -40,7 +42,7 @@ export default class ImportFromFatherService {
     if (recentImport && recentImport.status === 'success') {
       logger.info(`Recent successful import found for father name ${fatherName}, skipping API call`)
       return {
-        import_id: recentImport.id,
+        discovery_id: recentImport.id,
         status: 'success',
         persons_created: recentImport.persons_created,
         relationships_created: recentImport.relationships_created,
@@ -70,8 +72,8 @@ export default class ImportFromFatherService {
       await dataImport.save()
 
       // Track import progress
-      const progress: IImport.ImportResult = {
-        import_id: dataImport.id,
+      const progress: IFamilyDiscovery.DiscoveryResult = {
+        discovery_id: dataImport.id,
         status: 'success',
         persons_created: 0,
         relationships_created: 0,

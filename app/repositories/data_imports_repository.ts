@@ -1,13 +1,13 @@
 import { inject } from '@adonisjs/core'
 import { DateTime } from 'luxon'
 import DataImport from '#models/data_import'
-import IImport from '#interfaces/import_interface'
+import IFamilyDiscovery from '#interfaces/family_discovery_interface'
 import LucidRepository from '#shared/lucid/lucid_repository'
 
 @inject()
 export default class DataImportsRepository
   extends LucidRepository<typeof DataImport>
-  implements IImport.Repository
+  implements IFamilyDiscovery.Repository
 {
   protected model = DataImport
 

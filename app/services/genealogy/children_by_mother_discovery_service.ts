@@ -6,13 +6,13 @@ import PersonDiscoveryByCpfService from '#services/genealogy/person_discovery_by
 import PeopleRepository from '#repositories/people_repository'
 import RelationshipsRepository from '#repositories/relationships_repository'
 import DataImportsRepository from '#repositories/data_imports_repository'
-import IImport from '#interfaces/import_interface'
+import IFamilyDiscovery from '#interfaces/family_discovery_interface'
 
 /**
- * Service to import family data from mother's name using Findex API
+ * Service to discover children from mother's name using Findex API
  */
 @inject()
-export default class ImportFromMotherService {
+export default class ChildrenByMotherDiscoveryService {
   constructor(
     private findexClient: FindexClient,
     private findexMapper: FindexMapperService,
@@ -23,14 +23,16 @@ export default class ImportFromMotherService {
   ) {}
 
   /**
-   * Import children and family from mother's name
+   * Discover children and family from mother's name
    */
-  async run(payload: IImport.ImportFromMotherPayload): Promise<IImport.ImportResult> {
+  async run(
+    payload: IFamilyDiscovery.ChildrenByMotherPayload
+  ): Promise<IFamilyDiscovery.DiscoveryResult> {
     const {
       mother_name: motherName,
       family_tree_id: familyTreeId,
       user_id: userId,
-      import_relatives: importRelatives = false,
+      discover_relatives: importRelatives = false,
       merge_duplicates: mergeDuplicates = false,
     } = payload
 
@@ -61,7 +63,7 @@ export default class ImportFromMotherService {
         })
 
         return {
-          import_id: dataImport.id,
+          discovery_id: dataImport.id,
           status: 'success',
           persons_created: 0,
           relationships_created: 0,
@@ -70,8 +72,8 @@ export default class ImportFromMotherService {
         }
       }
 
-      const progress: IImport.ImportResult = {
-        import_id: dataImport.id,
+      const progress: IFamilyDiscovery.DiscoveryResult = {
+        discovery_id: dataImport.id,
         status: 'success',
         persons_created: 0,
         relationships_created: 0,
@@ -126,30 +128,30 @@ export default class ImportFromMotherService {
           createdPersonIds.push(person.id)
           siblings.push({ id: person.id, cpf: childData.CPF })
 
-          // If import_relatives is true, fetch full data for each child
+          // If discover_relatives is true, fetch full data for each child
           if (importRelatives) {
             try {
-              const fullImportResult = await this.personDiscoveryByCpfService.run({
+              const fullDiscoveryResult = await this.personDiscoveryByCpfService.run({
                 cpf: childData.CPF,
                 family_tree_id: familyTreeId,
                 user_id: userId,
-                import_relatives: true,
+                discover_relatives: true,
                 merge_duplicates: mergeDuplicates,
               })
 
               // Aggregate results (subtract the person we already counted)
-              if (isNewPerson && fullImportResult.persons_created > 0) {
-                progress.persons_created += fullImportResult.persons_created - 1
+              if (isNewPerson && fullDiscoveryResult.persons_created > 0) {
+                progress.persons_created += fullDiscoveryResult.persons_created - 1
               } else {
-                progress.persons_created += fullImportResult.persons_created
+                progress.persons_created += fullDiscoveryResult.persons_created
               }
 
-              progress.relationships_created += fullImportResult.relationships_created
-              progress.persons_updated += fullImportResult.persons_updated
-              progress.duplicates_found += fullImportResult.duplicates_found
+              progress.relationships_created += fullDiscoveryResult.relationships_created
+              progress.persons_updated += fullDiscoveryResult.persons_updated
+              progress.duplicates_found += fullDiscoveryResult.duplicates_found
 
-              if (fullImportResult.errors && fullImportResult.errors.length > 0) {
-                progress.errors?.push(...fullImportResult.errors)
+              if (fullDiscoveryResult.errors && fullDiscoveryResult.errors.length > 0) {
+                progress.errors?.push(...fullDiscoveryResult.errors)
               }
             } catch (cpfError) {
               logger.error(`Failed to import full data for CPF ${childData.CPF}`, cpfError)
@@ -209,7 +211,7 @@ export default class ImportFromMotherService {
 
       return progress
     } catch (error) {
-      logger.error('Import from mother name failed', error)
+      logger.error('Discovery from mother name failed', error)
       await this.importsRepository.markAsFailed(
         dataImport.id,
         error instanceof Error ? error.message : 'Unknown error'

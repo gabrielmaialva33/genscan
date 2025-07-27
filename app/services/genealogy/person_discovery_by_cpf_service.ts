@@ -7,13 +7,13 @@ import PeopleRepository from '#repositories/people_repository'
 import PersonDetail from '#models/person_detail'
 import RelationshipsRepository from '#repositories/relationships_repository'
 import DataImportsRepository from '#repositories/data_imports_repository'
-import IImport from '#interfaces/import_interface'
+import IFamilyDiscovery from '#interfaces/family_discovery_interface'
 
 /**
- * Service to import person data from CPF using Findex API
+ * Service to discover person data from CPF using Findex API
  */
 @inject()
-export default class ImportFromCPFService {
+export default class PersonDiscoveryByCpfService {
   constructor(
     private findexClient: FindexClient,
     private cacheService: FindexCacheService,
@@ -24,14 +24,16 @@ export default class ImportFromCPFService {
   ) {}
 
   /**
-   * Import person and relatives from CPF
+   * Discover person and relatives from CPF
    */
-  async run(payload: IImport.ImportFromCPFPayload): Promise<IImport.ImportResult> {
+  async run(
+    payload: IFamilyDiscovery.PersonDiscoveryByCPFPayload
+  ): Promise<IFamilyDiscovery.DiscoveryResult> {
     const {
       cpf,
       family_tree_id: familyTreeId,
       user_id: userId,
-      import_relatives: importRelatives = true,
+      discover_relatives: importRelatives = true,
       merge_duplicates: mergeDuplicates = true,
     } = payload
 
@@ -46,7 +48,7 @@ export default class ImportFromCPFService {
     if (recentImport && recentImport.status === 'success') {
       logger.info(`Recent successful import found for CPF ${cpf}, skipping API call`)
       return {
-        import_id: recentImport.id,
+        discovery_id: recentImport.id,
         status: 'success',
         persons_created: recentImport.persons_created,
         relationships_created: recentImport.relationships_created,
@@ -119,8 +121,8 @@ export default class ImportFromCPFService {
       }
 
       // Track import progress
-      const progress: IImport.ImportResult = {
-        import_id: dataImport.id,
+      const progress: IFamilyDiscovery.DiscoveryResult = {
+        discovery_id: dataImport.id,
         status: 'success',
         persons_created: isNewPerson ? 1 : 0,
         relationships_created: 0,
@@ -161,7 +163,7 @@ export default class ImportFromCPFService {
 
       return progress
     } catch (error) {
-      logger.error('Import from CPF failed', error)
+      logger.error('Discovery from CPF failed', error)
       await this.importsRepository.markAsFailed(
         dataImport.id,
         error instanceof Error ? error.message : 'Unknown error'
@@ -175,7 +177,7 @@ export default class ImportFromCPFService {
    * Import relatives from API data
    */
   private async importRelatives(
-    relatives: IImport.RelativeMapping[],
+    relatives: IFamilyDiscovery.RelativeMapping[],
     mainPersonId: string,
     familyTreeId: string,
     userId: number,
@@ -308,7 +310,7 @@ export default class ImportFromCPFService {
             relativePerson.id,
             relative.relationship_type,
             familyTreeId,
-            `Imported from CPF data`
+            `Discovered from CPF data`
           )
           results.relationships_created += 2 // Bidirectional = 2 relationships
         }
