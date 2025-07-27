@@ -247,4 +247,19 @@ export default class PeopleRepository
       spouse,
     }
   }
+
+  /**
+   * Get all people in a family tree
+   */
+  async getByFamilyTree(familyTreeId: string): Promise<Person[]> {
+    return this.model
+      .query()
+      .whereHas('relationships', (query) => {
+        query.where('family_tree_id', familyTreeId)
+      })
+      .orWhereHas('related_relationships', (query) => {
+        query.where('family_tree_id', familyTreeId)
+      })
+      .distinct()
+  }
 }

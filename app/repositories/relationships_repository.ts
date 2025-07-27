@@ -292,4 +292,15 @@ export default class RelationshipsRepository extends LucidRepository<typeof Rela
 
     return descendants
   }
+
+  /**
+   * Get all relationships in a family tree
+   */
+  async getByFamilyTree(familyTreeId: string): Promise<Relationship[]> {
+    return this.model
+      .query()
+      .where('family_tree_id', familyTreeId)
+      .preload('person')
+      .preload('related_person')
+  }
 }

@@ -4,6 +4,7 @@ import { apiThrottle } from '#start/limiter'
 import IPermission from '#interfaces/permission_interface'
 
 const FamilyTreesController = () => import('#controllers/family_tree/family_trees_controller')
+const ChartDataController = () => import('#controllers/family_tree/chart_data_controller')
 
 router
   .group(() => {
@@ -54,6 +55,16 @@ router
         })
       )
       .as('family_tree.delete')
+
+    router
+      .get('/:id/chart-data', [ChartDataController, 'show'])
+      .where('id', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+      .use(
+        middleware.permission({
+          permissions: `${IPermission.Resources.FAMILY_TREES}.${IPermission.Actions.READ}`,
+        })
+      )
+      .as('family_tree.chart_data')
   })
   .use([middleware.auth(), apiThrottle])
   .prefix('/api/v1/family-trees')
