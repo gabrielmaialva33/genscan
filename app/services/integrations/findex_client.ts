@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios'
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import findexConfig from '#config/findex'
+import FindexCacheService from '#services/integrations/findex_cache_service'
 import {
   FindexPersonResponse,
   FindexMotherSearchResponse,
@@ -19,7 +20,7 @@ export default class FindexClient {
   private requestCount: number = 0
   private lastRequestTime: number = 0
 
-  constructor() {
+  constructor(private cacheService: FindexCacheService) {
     this.client = axios.create({
       baseURL: findexConfig.baseUrl,
       timeout: findexConfig.request.timeout,
@@ -142,29 +143,68 @@ export default class FindexClient {
       throw new Error('Invalid CPF format. Must contain 11 digits.')
     }
 
-    await this.applyRateLimit()
+    // Check cache first
+    const cachedData = await this.cacheService.getCachedCPFData(cleanCPF)
+    if (cachedData) {
+      logger.debug(`Cache hit for CPF: ${cleanCPF}`)
+      return cachedData
+    }
 
-    return this.retryRequest(async () => {
-      try {
-        const response = await this.client.get('', {
-          params: {
-            token: findexConfig.tokens.cpf,
-            cpf: cleanCPF,
-          },
-        })
-
-        if (!isFindexPersonResponse(response.data)) {
-          throw new Error('Invalid response format from Findex API')
-        }
-
-        return response.data
-      } catch (error) {
-        if (error instanceof AxiosError) {
-          this.handleError(error)
-        }
-        throw error
+    // Check if already being processed (deduplication)
+    if (await this.cacheService.isProcessing(cleanCPF)) {
+      logger.debug(`CPF ${cleanCPF} is already being processed, waiting...`)
+      // Wait a bit and try cache again
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const retryCache = await this.cacheService.getCachedCPFData(cleanCPF)
+      if (retryCache) {
+        return retryCache
       }
-    })
+      // If still not available, continue with API call
+    }
+
+    // Mark as processing
+    await this.cacheService.markAsProcessing(cleanCPF)
+
+    try {
+      await this.applyRateLimit()
+
+      const result = await this.retryRequest(async () => {
+        try {
+          logger.debug(`Making API call for CPF: ${cleanCPF}`)
+          const response = await this.client.get('', {
+            params: {
+              token: findexConfig.tokens.cpf,
+              cpf: cleanCPF,
+            },
+          })
+
+          if (!isFindexPersonResponse(response.data)) {
+            throw new Error('Invalid response format from Findex API')
+          }
+
+          return response.data
+        } catch (error) {
+          if (error instanceof AxiosError) {
+            this.handleError(error)
+          }
+          throw error
+        }
+      })
+
+      // Cache the result
+      await this.cacheService.cacheCPFData(cleanCPF, result)
+
+      // Warm cache for relatives
+      if (result.PARENTES && result.PARENTES.length > 0) {
+        await this.cacheService.warmCacheForRelatives(result.PARENTES)
+      }
+
+      logger.debug(`Successfully cached CPF data: ${cleanCPF}`)
+      return result
+    } finally {
+      // Always unmark as processing
+      await this.cacheService.unmarkAsProcessing(cleanCPF)
+    }
   }
 
   /**
@@ -175,14 +215,24 @@ export default class FindexClient {
       throw new Error('Mother name must have at least 3 characters')
     }
 
+    const normalizedName = motherName.trim().toUpperCase()
+
+    // Check cache first
+    const cachedData = await this.cacheService.getCachedMotherSearchData(normalizedName)
+    if (cachedData) {
+      logger.debug(`Cache hit for mother name: ${normalizedName}`)
+      return cachedData
+    }
+
     await this.applyRateLimit()
 
-    return this.retryRequest(async () => {
+    const result = await this.retryRequest(async () => {
       try {
+        logger.debug(`Making API call for mother name: ${normalizedName}`)
         const response = await this.client.get('', {
           params: {
             token: findexConfig.tokens.parent,
-            mae: motherName.trim().toUpperCase(),
+            mae: normalizedName,
           },
         })
 
@@ -198,6 +248,12 @@ export default class FindexClient {
         throw error
       }
     })
+
+    // Cache the result
+    await this.cacheService.cacheMotherSearchData(normalizedName, result)
+    logger.debug(`Successfully cached mother search data: ${normalizedName}`)
+
+    return result
   }
 
   /**

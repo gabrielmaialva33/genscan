@@ -1,6 +1,7 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import FindexClient from '#services/integrations/findex_client'
+import FindexCacheService from '#services/integrations/findex_cache_service'
 import FindexMapperService from '#services/imports/findex_mapper_service'
 import PeopleRepository from '#repositories/people_repository'
 import PersonDetail from '#models/person_detail'
@@ -15,6 +16,7 @@ import IImport from '#interfaces/import_interface'
 export default class ImportFromCPFService {
   constructor(
     private findexClient: FindexClient,
+    private cacheService: FindexCacheService,
     private findexMapper: FindexMapperService,
     private peopleRepository: PeopleRepository,
     private relationshipsRepository: RelationshipsRepository,
@@ -199,10 +201,12 @@ export default class ImportFromCPFService {
         let relativePerson = await this.peopleRepository.findByNationalId(relative.api_cpf)
 
         if (!relativePerson) {
-          // Try to get more data about the relative
-          try {
-            const relativeApiData = await this.findexClient.searchByCPF(relative.api_cpf)
-            const relativePersonData = this.findexMapper.mapToPerson(relativeApiData)
+          // Check if we have cached data first (cache warming may have populated this)
+          const cachedRelativeData = await this.cacheService.getCachedCPFData(relative.api_cpf)
+
+          if (cachedRelativeData) {
+            logger.info(`Using cached data for relative: ${relative.api_cpf}`)
+            const relativePersonData = this.findexMapper.mapToPerson(cachedRelativeData)
             relativePersonData.created_by = userId
 
             // Check for duplicates
@@ -228,20 +232,64 @@ export default class ImportFromCPFService {
 
               // Also create details for the relative
               const relativeDetailsData = this.findexMapper.mapToPersonDetail(
-                relativeApiData,
+                cachedRelativeData,
                 relativePerson.id
               )
               await PersonDetail.create(relativeDetailsData)
             }
-          } catch (apiError) {
-            // If we can't get full data, create with basic info
-            relativePerson = await this.peopleRepository.create({
-              full_name: relative.api_name,
-              national_id: relative.api_cpf,
-              created_by: userId,
-            })
-            results.persons_created++
-            logger.warn(`Created relative with basic info only: ${relative.api_cpf}`)
+          } else {
+            // No cached data, make API call
+            try {
+              logger.info(`Making API call for relative: ${relative.api_cpf}`)
+              const relativeApiData = await this.findexClient.searchByCPF(relative.api_cpf)
+              const relativePersonData = this.findexMapper.mapToPerson(relativeApiData)
+              relativePersonData.created_by = userId
+
+              // Check for duplicates
+              if (
+                mergeDuplicates &&
+                relativePersonData.full_name &&
+                relativePersonData.birth_date
+              ) {
+                const potentialDuplicates = await this.peopleRepository.search(
+                  relativePersonData.full_name
+                )
+                const duplicate = potentialDuplicates.find((p) =>
+                  this.findexMapper.isLikelyDuplicate(relativePersonData, p)
+                )
+
+                if (duplicate) {
+                  relativePerson = duplicate
+                  await relativePerson.merge(relativePersonData).save()
+                  results.duplicates_found++
+                  logger.info(`Merged relative with existing person: ${relativePerson.id}`)
+                }
+              }
+
+              if (!relativePerson) {
+                relativePerson = await this.peopleRepository.create(relativePersonData)
+                results.persons_created++
+
+                // Also create details for the relative
+                const relativeDetailsData = this.findexMapper.mapToPersonDetail(
+                  relativeApiData,
+                  relativePerson.id
+                )
+                await PersonDetail.create(relativeDetailsData)
+              }
+            } catch (apiError) {
+              // If we can't get full data, create with basic info
+              logger.warn(
+                `API call failed for relative ${relative.api_cpf}, creating with basic info`
+              )
+              relativePerson = await this.peopleRepository.create({
+                full_name: relative.api_name,
+                national_id: relative.api_cpf,
+                created_by: userId,
+              })
+              results.persons_created++
+              logger.warn(`Created relative with basic info only: ${relative.api_cpf}`)
+            }
           }
         } else {
           results.persons_updated++
