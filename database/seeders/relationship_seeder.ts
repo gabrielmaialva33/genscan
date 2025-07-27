@@ -80,7 +80,9 @@ export default class RelationshipSeeder extends BaseSeeder {
                   status: 'active',
                 })
               } catch (error) {
-                logger.error(`Failed to create spouse relationship: ${males[i].id} -> ${females[i].id}`)
+                logger.error(
+                  `Failed to create spouse relationship: ${males[i].id} -> ${females[i].id}`
+                )
                 logger.error(`Error: ${error.message}`)
                 throw error
               }
@@ -207,7 +209,7 @@ export default class RelationshipSeeder extends BaseSeeder {
 
     // Create sibling relationships
     const processedSiblings = new Set<string>()
-    
+
     for (const person of people) {
       if (person.mother_name && person.father_name) {
         // Find siblings (same parents)
@@ -220,10 +222,10 @@ export default class RelationshipSeeder extends BaseSeeder {
 
         for (const sibling of siblings) {
           const relationshipKey = [person.id, sibling.id].sort().join('-')
-          
+
           if (!processedSiblings.has(relationshipKey)) {
             processedSiblings.add(relationshipKey)
-            
+
             // Create bidirectional sibling relationships
             await Relationship.create({
               person_id: person.id,
@@ -232,7 +234,7 @@ export default class RelationshipSeeder extends BaseSeeder {
               family_tree_id: tree.id,
               status: sibling.is_living ? 'active' : 'deceased',
             })
-            
+
             await Relationship.create({
               person_id: sibling.id,
               related_person_id: person.id,
@@ -249,7 +251,7 @@ export default class RelationshipSeeder extends BaseSeeder {
 
     // Create grandparent relationships
     const processedGrandparents = new Set<string>()
-    
+
     for (const person of people) {
       // Find grandparents through parents
       const parents = await Relationship.query()
@@ -268,11 +270,11 @@ export default class RelationshipSeeder extends BaseSeeder {
 
         for (const gpRel of grandparents) {
           const relationshipKey = `${gpRel.person_id}-${person.id}-grandparent`
-          
+
           if (!processedGrandparents.has(relationshipKey)) {
             processedGrandparents.add(relationshipKey)
             processedGrandparents.add(`${person.id}-${gpRel.person_id}-grandchild`)
-            
+
             // Grandparent -> Grandchild
             await Relationship.create({
               person_id: gpRel.person_id,
@@ -291,7 +293,9 @@ export default class RelationshipSeeder extends BaseSeeder {
               status: person.is_living && gpRel.person.is_living ? 'active' : 'deceased',
             })
 
-            logger.debug(`    ✓ Created grandparent: ${gpRel.person.full_name} → ${person.full_name}`)
+            logger.debug(
+              `    ✓ Created grandparent: ${gpRel.person.full_name} → ${person.full_name}`
+            )
           }
         }
       }
