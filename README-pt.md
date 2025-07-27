@@ -1,13 +1,13 @@
 <h1 align="center">
-  <img src=".github/assets/ui-design.png" height="250" alt="Adonis Web Kit">
+  Genscan - Construtor de Árvore Genealógica
 </h1>
 
 <p align="center">
-  <img src="https://img.shields.io/github/license/gabrielmaialva33/adonis-web-kit?color=00b8d3&style=flat-square" alt="Licença" />
-  <img src="https://img.shields.io/github/languages/top/gabrielmaialva33/adonis-web-kit?style=flat-square" alt="Linguagem principal do GitHub" >
-  <img src="https://img.shields.io/github/repo-size/gabrielmaialva33/adonis-web-kit?style=flat-square" alt="Tamanho do repositório" >
-  <a href="https://github.com/gabrielmaialva33/adonis-web-kit/commits/main">
-    <img src="https://img.shields.io/github/last-commit/gabrielmaialva33/adonis-web-kit?style=flat-square" alt="Último commit do GitHub" >
+  <img src="https://img.shields.io/github/license/gabrielmaialva33/genscan?color=00b8d3&style=flat-square" alt="Licença" />
+  <img src="https://img.shields.io/github/languages/top/gabrielmaialva33/genscan?style=flat-square" alt="Linguagem principal do GitHub" >
+  <img src="https://img.shields.io/github/repo-size/gabrielmaialva33/genscan?style=flat-square" alt="Tamanho do repositório" >
+  <a href="https://github.com/gabrielmaialva33/genscan/commits/main">
+    <img src="https://img.shields.io/github/last-commit/gabrielmaialva33/genscan?style=flat-square" alt="Último commit do GitHub" >
   </a>
 </p>
 
@@ -19,7 +19,7 @@
 
 <p align="center">
   <a href="#bookmark-sobre">Sobre</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#rocket-desenvolvimento-ai-first">Desenvolvimento AI-First</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#sparkles-funcionalidades">Funcionalidades</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#computer-tecnologias">Tecnologias</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#package-instalação">Instalação</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#memo-licença">Licença</a>
@@ -27,96 +27,94 @@
 
 ## :bookmark: Sobre
 
-O **Adonis Web Kit** é um _starter kit_ full-stack moderno, opinativo e focado em IA, projetado para acelerar o
-desenvolvimento de aplicações web robustas. Ele combina um poderoso backend em **AdonisJS v6** com um frontend dinâmico
-em **React 19** e **Inertia.js**, tudo dentro de uma estrutura monorepo unificada.
+O **Genscan** é um construtor de árvore genealógica moderno, projetado para ajudar as pessoas a descobrir e visualizar sua genealogia. Construído com poderosas capacidades de integração de dados, permite aos usuários importar dados familiares de APIs de genealogia brasileiras e criar árvores genealógicas interativas e bonitas.
 
-Este projeto não é apenas uma coleção de tecnologias; é uma fundação projetada para eficiência, escalabilidade e
-colaboração transparente com parceiros de desenvolvimento de IA. Ao fornecer uma arquitetura bem definida com recursos
-como autenticação, controle de acesso baseado em papéis (RBAC) e gerenciamento de arquivos prontos para uso, ele permite
-que desenvolvedores (humanos e IAs) se concentrem na construção de lógicas de negócio únicas, em vez de código
-repetitivo.
+O projeto combina a robustez do backend **AdonisJS v6** com um frontend dinâmico em **React 19**, apresentando visualizações interativas baseadas em D3.js através da biblioteca **family-chart**. Foi projetado para tornar a pesquisa genealógica acessível e envolvente para todos.
 
 ### 🏗️ Visão Geral da Arquitetura
 
 ```mermaid
 graph TD
-    subgraph "Frontend (Inertia.js)"
-        FE_UI[Componentes React & Páginas]
-        FE_HOOKS["Hooks (useAuth, useApi)"]
-        FE_UTILS[Utilitários & Tipos]
+    subgraph "Frontend"
+        UI[Componentes React]
+        FC[Visualização Family Chart]
+        IMPORT[Assistente de Importação]
     end
 
-    subgraph "Backend (AdonisJS)"
-        BE_ROUTES[Rotas]
-        BE_MW["Middleware (Auth, ACL)"]
-        BE_CTRL[Controllers]
-        BE_SERVICES[Serviços]
-        BE_REPOS[Repositórios]
-        BE_MODELS[Modelos Lucid]
+    subgraph "Serviços Backend"
+        API[Controladores API]
+        GEN[Serviço de Genealogia]
+        IMPORT_SVC[Serviço de Importação]
+        TREE_SVC[Serviço de Árvore Genealógica]
     end
 
-    subgraph "Compartilhado (Shared)"
-        SHARED_TYPES[Tipos TypeScript]
-        SHARED_CONFIG[Arquivos de Configuração]
+    subgraph "APIs Externas"
+        FINDEX[API Findexbuscas]
+        FUTURE[API FamilySearch]
     end
 
-    subgraph "Camada de Dados (Data Layer)"
+    subgraph "Camada de Dados"
         DB[(PostgreSQL)]
-        CACHE[(Redis)]
+        CACHE[(Cache Redis)]
     end
 
-    FE_UI --> BE_ROUTES
-    BE_ROUTES --> BE_MW
-    BE_MW --> BE_CTRL
-    BE_CTRL --> BE_SERVICES
-    BE_SERVICES --> BE_REPOS
-    BE_REPOS --> BE_MODELS
-    BE_MODELS --> DB
-
-    BE_SERVICES --> CACHE
-    FE_HOOKS --> BE_ROUTES
-
-    FE_UTILS --> SHARED_TYPES
-    BE_CTRL --> SHARED_TYPES
+    UI --> API
+    FC --> API
+    IMPORT --> API
+    
+    API --> GEN
+    API --> IMPORT_SVC
+    API --> TREE_SVC
+    
+    GEN --> FINDEX
+    GEN --> FUTURE
+    
+    IMPORT_SVC --> DB
+    TREE_SVC --> DB
+    GEN --> CACHE
 ```
 
-## :rocket: Desenvolvimento AI-First
+## :sparkles: Funcionalidades
 
-Este _starter kit_ foi projetado de forma única para maximizar a eficácia da codificação assistida por IA.
+### Funcionalidades Principais
+- **🌳 Árvores Genealógicas Interativas**: Visualizações bonitas e interativas com D3.js
+- **🔍 Importação Inteligente de Dados**: Importe dados familiares usando CPF ou nome da mãe
+- **👨‍👩‍👧‍👦 Gerenciamento de Relacionamentos**: Gerencie facilmente relacionamentos familiares complexos
+- **📊 Múltiplas Árvores**: Crie e gerencie múltiplas árvores genealógicas
+- **🔒 Controles de Privacidade**: Controle quem pode visualizar e editar suas árvores
 
-- **Contexto Unificado (Monorepo)**: Ter o código do backend e do frontend em um único repositório fornece um contexto
-  completo para ferramentas de IA, permitindo que elas gerem código mais preciso e coeso que abrange toda a stack.
-- **Base Fortemente Tipada**: O uso de TypeScript de ponta a ponta cria um contrato claro entre as camadas de frontend,
-  backend e API. Isso reduz a ambiguidade e permite que a IA entenda estruturas de dados e assinaturas de funções,
-  resultando em menos erros.
-- **Arquitetura Modular e Opinativa**: A clara separação de responsabilidades (controllers, serviços, repositórios)
-  facilita para uma IA localizar, entender e modificar partes específicas do código com precisão.
-- **Foco na Lógica de Negócio**: Com o boilerplate de autenticação, permissões e armazenamento de arquivos já resolvido,
-  a IA pode ser direcionada para resolver problemas de negócio de nível superior desde o primeiro dia.
+### Integração de Dados
+- **API de Genealogia Brasileira**: Integração com Findexbuscas para dados familiares brasileiros
+- **Detecção Automática de Relacionamentos**: Algoritmos inteligentes para detectar e criar relacionamentos familiares
+- **Prevenção de Duplicatas**: Detecção inteligente de duplicatas ao importar dados
+- **Enriquecimento de Dados**: Enriqueça automaticamente perfis com dados públicos disponíveis
 
-## 🌟 Principais Funcionalidades
+### Recursos de Visualização
+- **Navegação Interativa**: Zoom, pan e explore grandes árvores genealógicas
+- **Layouts Personalizados**: Diferentes estilos de visualização para sua árvore
+- **Detalhes de Pessoas**: Clique em qualquer pessoa para ver informações detalhadas
+- **Filtros por Geração**: Foque em gerações ou ramos específicos
 
-- **🔐 Autenticação Multi-Guard**: Autenticação baseada em JWT pronta para uso.
-- **👥 Controle de Acesso Avançado (RBAC)**: Gerencie permissões de usuário com papéis e regras detalhadas.
-- **📁 Gerenciamento de Arquivos**: Serviço de upload de arquivos pré-configurado com suporte para drivers locais e S3.
-- **⚡️ Reatividade Full-Stack**: O poder do React combinado com a simplicidade de uma aplicação tradicional renderizada
-  no servidor, graças ao Inertia.js.
-- **🎨 Componentes de UI**: Um conjunto de componentes de UI bonitos e reutilizáveis construídos com `shadcn/ui`,
-  Tailwind CSS e `lucide-react`.
-- **✅ API Type-Safe**: Autocompletar e verificação de tipos para chamadas de API e props.
-- **🏥 Health Checks**: Endpoint de verificação de saúde integrado para monitoramento.
+### Funcionalidades Futuras
+- **📸 Álbuns de Fotos**: Adicione fotos e documentos aos membros da família
+- **📅 Visualização em Timeline**: Veja a história da sua família em uma linha do tempo
+- **🌍 Integração com FamilySearch**: Conecte-se ao maior banco de dados genealógico do mundo
+- **📄 Opções de Exportação**: Exporte sua árvore em vários formatos (PDF, GEDCOM)
 
 ## :computer: Tecnologias
 
-- **[AdonisJS v6](https://adonisjs.com/)**: Um framework Node.js robusto para o backend.
-- **[React 19](https://react.dev/)**: Uma poderosa biblioteca para construir interfaces de usuário.
-- **[Inertia.js](https://inertiajs.com/)**: A cola que conecta o frontend moderno com o backend.
-- **[TypeScript](https://www.typescriptlang.org/)**: Para segurança de tipos em toda a stack.
-- **[PostgreSQL](https://www.postgresql.org/)**: Um banco de dados relacional confiável e poderoso.
-- **[Redis](https://redis.io/)**: Usado para cache e gerenciamento de sessões.
-- **[Vite](https://vitejs.dev/)**: Para uma experiência de desenvolvimento frontend ultrarrápida.
-- **[Tailwind CSS](https://tailwindcss.com/)**: Um framework CSS utility-first para desenvolvimento rápido de UI.
+### Backend
+- **[AdonisJS v6](https://adonisjs.com/)**: Framework Node.js robusto
+- **[PostgreSQL](https://www.postgresql.org/)**: Banco de dados relacional confiável
+- **[Redis](https://redis.io/)**: Cache e gerenciamento de sessões
+- **[Bull Queue](https://github.com/OptimalBits/bull)**: Processamento de jobs em background
+
+### Frontend
+- **[React 19](https://react.dev/)**: Biblioteca moderna de UI
+- **[Inertia.js](https://inertiajs.com/)**: Experiência SPA perfeita
+- **[family-chart](https://github.com/donatso/family-chart)**: Visualização de árvore genealógica baseada em D3.js
+- **[Tailwind CSS](https://tailwindcss.com/)**: Framework CSS utility-first
+- **[TypeScript](https://www.typescriptlang.org/)**: Tipagem segura em toda a stack
 
 ## :package: Instalação
 
@@ -124,15 +122,16 @@ Este _starter kit_ foi projetado de forma única para maximizar a eficácia da c
 
 - **Node.js** (v18 ou superior)
 - **pnpm** (ou npm/yarn)
-- **Docker** (para rodar PostgreSQL e Redis)
+- **PostgreSQL** (v14 ou superior)
+- **Redis** (v6 ou superior)
 
 ### 🚀 Começando
 
 1. **Clone o repositório:**
 
    ```sh
-   git clone https://github.com/gabrielmaialva33/adonis-web-kit.git
-   cd adonis-web-kit
+   git clone https://github.com/gabrielmaialva33/genscan.git
+   cd genscan
    ```
 
 2. **Instale as dependências:**
@@ -147,7 +146,10 @@ Este _starter kit_ foi projetado de forma única para maximizar a eficácia da c
    cp .env.example .env
    ```
 
-   _Abra o arquivo `.env` e configure suas credenciais de banco de dados e outras configurações._
+   Configure o seguinte no seu arquivo `.env`:
+   - Credenciais do banco de dados
+   - Conexão Redis
+   - Token da API Findexbuscas
 
 4. **Execute as migrações do banco de dados:**
 
@@ -155,21 +157,37 @@ Este _starter kit_ foi projetado de forma única para maximizar a eficácia da c
    node ace migration:run
    ```
 
-5. **Inicie o servidor de desenvolvimento:**
+5. **Popule dados iniciais (opcional):**
+
+   ```sh
+   node ace db:seed
+   ```
+
+6. **Inicie o servidor de desenvolvimento:**
    ```sh
    pnpm dev
    ```
-   _Sua aplicação estará disponível em `http://localhost:3333`._
+   
+   Sua aplicação estará disponível em `http://localhost:3333`.
 
 ### 📜 Scripts Disponíveis
 
-- `pnpm dev`: Inicia o servidor de desenvolvimento com HMR.
-- `pnpm build`: Compila a aplicação para produção.
-- `pnpm start`: Executa o servidor pronto para produção.
-- `pnpm test`: Executa os testes unitários.
-- `pnpm test:e2e`: Executa os testes de ponta a ponta.
-- `pnpm lint`: Verifica o código com o linter.
-- `pnpm format`: Formata o código com o Prettier.
+- `pnpm dev`: Inicia o servidor de desenvolvimento com HMR
+- `pnpm build`: Compila para produção
+- `pnpm start`: Executa o servidor de produção
+- `pnpm test`: Executa testes unitários
+- `pnpm test:e2e`: Executa testes end-to-end
+- `pnpm lint`: Verifica o código com linter
+- `pnpm format`: Formata o código com Prettier
+- `pnpm typecheck`: Executa verificação de tipos TypeScript
+
+## :rocket: Como Usar
+
+1. **Crie uma Conta**: Cadastre-se com seu email
+2. **Crie uma Árvore Genealógica**: Inicie sua primeira árvore familiar
+3. **Importe Dados**: Use CPF ou nome da mãe para importar dados familiares
+4. **Visualize**: Explore sua árvore genealógica com visualização interativa
+5. **Compartilhe**: Convide membros da família para colaborar
 
 ## :memo: Licença
 
@@ -178,5 +196,5 @@ Este projeto está licenciado sob a **Licença MIT**. Veja o arquivo [LICENSE](L
 ---
 
 <p align="center">
-  Feito com ❤️ pela comunidade.
+  Feito com ❤️ para ajudar as pessoas a descobrir suas raízes
 </p>
