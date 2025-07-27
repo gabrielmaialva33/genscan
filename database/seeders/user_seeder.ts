@@ -2,7 +2,6 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { UserFactory } from '#database/factories/user_factory'
 import User from '#models/user'
 import Role from '#models/role'
-import hash from '@adonisjs/core/services/hash'
 import logger from '@adonisjs/core/services/logger'
 import { DateTime } from 'luxon'
 import IRole from '#interfaces/role_interface'
@@ -23,7 +22,7 @@ export default class UserSeeder extends BaseSeeder {
       full_name: 'Administrator',
       email: 'admin@genscan.com',
       username: 'admin',
-      password: await hash.make('Admin@123'),
+      password: '123456',
       is_deleted: false,
       metadata: {
         email_verified: true,
@@ -46,7 +45,7 @@ export default class UserSeeder extends BaseSeeder {
         full_name: 'João Silva',
         email: 'joao.silva@example.com',
         username: 'joaosilva',
-        password: await hash.make('Password@123'),
+        password: '123456',
         is_deleted: false,
         metadata: {
           email_verified: true,
@@ -59,7 +58,7 @@ export default class UserSeeder extends BaseSeeder {
         full_name: 'Maria Santos',
         email: 'maria.santos@example.com',
         username: 'mariasantos',
-        password: await hash.make('Password@123'),
+        password: '123456',
         is_deleted: false,
         metadata: {
           email_verified: true,
@@ -82,7 +81,7 @@ export default class UserSeeder extends BaseSeeder {
         full_name: 'Test Admin',
         email: 'teste.admin@genscan.com',
         username: 'teste.admin',
-        password: await hash.make('Admin@123'),
+        password: '123456',
         role: IRole.Slugs.ADMIN,
         is_deleted: false,
         metadata: {
@@ -96,7 +95,7 @@ export default class UserSeeder extends BaseSeeder {
         full_name: 'Test User',
         email: 'teste.user@genscan.com',
         username: 'teste.user',
-        password: await hash.make('User@123'),
+        password: '123456',
         role: IRole.Slugs.USER,
         is_deleted: false,
         metadata: {
@@ -110,7 +109,7 @@ export default class UserSeeder extends BaseSeeder {
         full_name: 'Test Guest',
         email: 'teste.guest@genscan.com',
         username: 'teste.guest',
-        password: await hash.make('Guest@123'),
+        password: '123456',
         role: IRole.Slugs.GUEST,
         is_deleted: false,
         metadata: {
@@ -138,7 +137,7 @@ export default class UserSeeder extends BaseSeeder {
       full_name: 'Test User 1',
       email: 'teste1@example.com',
       username: 'teste1',
-      password: await hash.make('Test@123'),
+      password: '123456',
     })
       .apply('verified')
       .create()
@@ -149,14 +148,14 @@ export default class UserSeeder extends BaseSeeder {
       full_name: 'Test User 2',
       email: 'teste2@example.com',
       username: 'teste2',
-      password: await hash.make('Test@123'),
+      password: '123456',
     }).create()
 
     logger.debug(`  ✓ Created test user: ${testUser2.email} (unverified)`)
 
     // Create additional random users for testing
     const randomUsers = await UserFactory.merge({
-      password: await hash.make('Random@123'),
+      password: '123456',
     }).createMany(5)
 
     logger.debug(`  ✓ Created ${randomUsers.length} additional random users`)

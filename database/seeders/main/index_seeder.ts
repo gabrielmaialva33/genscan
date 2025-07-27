@@ -33,6 +33,9 @@ export default class IndexSeeder extends BaseSeeder {
     logger.info('💑 Seeding relationships...')
     await this.seed(await import('#database/seeders/relationship_seeder'))
 
+    logger.info('📊 Seeding family chart examples...')
+    await this.seed(await import('#database/seeders/family_chart_example_seeder'))
+
     logger.info('✅ Database seeding completed!')
   }
 }

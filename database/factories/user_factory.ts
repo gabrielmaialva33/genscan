@@ -1,6 +1,5 @@
 import { DateTime } from 'luxon'
 import factory from '@adonisjs/lucid/factories'
-import hash from '@adonisjs/core/services/hash'
 
 import User from '#models/user'
 
@@ -13,7 +12,7 @@ export const UserFactory = factory
       full_name: `${firstName} ${lastName}`,
       email: faker.internet.email({ firstName, lastName }).toLowerCase(),
       username: faker.internet.username({ firstName, lastName }),
-      password: await hash.make('password123'),
+      password: '123456',
       is_deleted: false,
       metadata: {
         email_verified: false,
