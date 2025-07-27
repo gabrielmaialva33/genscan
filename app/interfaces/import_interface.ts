@@ -41,7 +41,7 @@ namespace IImport {
   export interface ImportFromCPFPayload {
     cpf: string
     family_tree_id: string
-    user_id: string
+    user_id: number
     import_relatives?: boolean
     merge_duplicates?: boolean
   }
@@ -52,7 +52,7 @@ namespace IImport {
   export interface ImportFromMotherPayload {
     mother_name: string
     family_tree_id: string
-    user_id: string
+    user_id: number
     import_relatives?: boolean
     merge_duplicates?: boolean
   }

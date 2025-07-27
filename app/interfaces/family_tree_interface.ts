@@ -37,7 +37,7 @@ namespace IFamilyTree {
   export interface CreatePayload {
     name: string
     description?: string | null
-    created_by: string
+    created_by: number
     is_public?: boolean
     settings?: {
       default_view?: 'tree' | 'list' | 'timeline'
@@ -64,10 +64,10 @@ namespace IFamilyTree {
    * Add member payload
    */
   export interface AddMemberPayload {
-    user_id: string
+    user_id: number
     family_tree_id: string
     role: 'owner' | 'admin' | 'editor' | 'viewer'
-    invited_by: string
+    invited_by: number
     person_id?: string | null
     permissions?: {
       can_add_people?: boolean

@@ -33,6 +33,9 @@ namespace IPermission {
     SETTINGS = 'settings',
     REPORTS = 'reports',
     AUDIT = 'audit',
+    FAMILY_TREES = 'family_trees',
+    PEOPLE = 'people',
+    IMPORTS = 'imports',
   }
 
   export enum Actions {

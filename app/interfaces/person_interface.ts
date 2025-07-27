@@ -48,7 +48,7 @@ namespace IPerson {
     mother_name?: string | null
     father_name?: string | null
     profile_photo_url?: string | null
-    created_by?: string
+    created_by?: number
   }
 
   /**
@@ -66,7 +66,7 @@ namespace IPerson {
     mother_name?: string | null
     father_name?: string | null
     profile_photo_url?: string | null
-    updated_by?: string
+    updated_by?: number
   }
 
   /**
