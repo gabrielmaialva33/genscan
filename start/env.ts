@@ -134,4 +134,12 @@ export default await Env.create(new URL('../', import.meta.url), {
   MAILGUN_API_KEY: Env.schema.string.optional(),
   MAILGUN_DOMAIN: Env.schema.string.optional(),
   MAILGUN_BASE_URL: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for configuring the data pro api
+  |----------------------------------------------------------
+  */
+  FINDEX_CPF_API_KEY: Env.schema.string(),
+  FINDEX_PARENT_API_KEY: Env.schema.string.optional(),
 })
