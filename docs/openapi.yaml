@@ -575,7 +575,7 @@ paths:
                     example: 'adonis-web-kit'
                   description:
                     type: string
-                    example: 'Base ACL API built with AdonisJS'
+                    example: 'Genscan API built with AdonisJS'
                   version:
                     type: string
                     example: '0.0.0'
@@ -1834,7 +1834,7 @@ paths:
         Import a complete genealogy tree starting from a CPF.
         This endpoint queues the import job for asynchronous processing.
         Use the returned import_id to check the status.
-        
+
         The import will traverse the tree using BFS (Breadth-First Search)
         up to the specified depth, importing all relatives found.
       tags:
