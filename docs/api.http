@@ -8,8 +8,8 @@
 ### - Content-Type: application/json (except file uploads)
 ### - Timestamps: ISO 8601 format
 ### - Database fields: snake_case naming
-### - Pagination: ?page=1&perPage=10
-### - Sorting: ?sortBy=field&order=asc|desc
+### - Pagination: ?page=1&per_page=10
+### - Sorting: ?sort_by=field&order=asc|desc
 ### - Search: ?search=term
 
 ### Variables (replace with actual values)
@@ -124,12 +124,12 @@ Authorization: Bearer {{token}}
 Accept: application/json
 
 ### List Users with Pagination
-GET {{baseUrl}}/api/v1/users?page=1&perPage=20
+GET {{baseUrl}}/api/v1/users?page=1&per_page=20
 Authorization: Bearer {{token}}
 Accept: application/json
 
 ### List Users with Sorting
-GET {{baseUrl}}/api/v1/users?sortBy=created_at&order=desc
+GET {{baseUrl}}/api/v1/users?sort_by=created_at&order=desc
 Authorization: Bearer {{token}}
 Accept: application/json
 
@@ -190,7 +190,7 @@ Authorization: Bearer {{token}}
 Accept: application/json
 
 ### List Roles with Pagination
-GET {{baseUrl}}/api/v1/admin/roles?page=1&perPage=10
+GET {{baseUrl}}/api/v1/admin/roles?page=1&per_page=10
 Authorization: Bearer {{token}}
 Accept: application/json
 
@@ -350,7 +350,7 @@ Authorization: Bearer {{token}}
 Accept: application/json
 
 ### List Family Trees with Pagination
-GET {{baseUrl}}/api/v1/family-trees?page=1&perPage=10
+GET {{baseUrl}}/api/v1/family-trees?page=1&per_page=10
 Authorization: Bearer {{token}}
 Accept: application/json
 
@@ -404,7 +404,7 @@ Authorization: Bearer {{token}}
 Accept: application/json
 
 ### List People with Pagination
-GET {{baseUrl}}/api/v1/people?page=1&perPage=20
+GET {{baseUrl}}/api/v1/people?page=1&per_page=20
 Authorization: Bearer {{token}}
 Accept: application/json
 
@@ -453,7 +453,7 @@ Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Search People by Name with Pagination
-GET {{baseUrl}}/api/v1/people/search?name=silva&page=1&perPage=50
+GET {{baseUrl}}/api/v1/people/search?name=silva&page=1&per_page=50
 Authorization: Bearer {{token}}
 Accept: application/json
 
