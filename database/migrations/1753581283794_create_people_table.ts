@@ -16,6 +16,8 @@ export default class extends BaseSchema {
       table.string('occupation', 255).nullable()
       table.text('notes').nullable()
       table.string('photo_url', 500).nullable()
+      table.string('mother_name', 255).nullable()
+      table.string('father_name', 255).nullable()
       table.integer('created_by').references('id').inTable('users').notNullable()
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).notNullable()
