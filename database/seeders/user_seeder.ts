@@ -125,7 +125,7 @@ export default class UserSeeder extends BaseSeeder {
     for (const testUserData of testUsers) {
       const { role: roleSlug, ...userData } = testUserData
       const user = await User.create(userData)
-      
+
       const role = await Role.findBy('slug', roleSlug)
       if (role) {
         await user.related('roles').attach([role.id])

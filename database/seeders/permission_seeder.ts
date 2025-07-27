@@ -9,10 +9,10 @@ export default class PermissionSeeder extends BaseSeeder {
 
   async run() {
     logger.info('Creating default permissions and assigning to roles...')
-    
+
     const service = await app.container.make(AssignDefaultPermissionsService)
     await service.run()
-    
+
     logger.info('✅ Permissions created and assigned to roles successfully!')
   }
 }
