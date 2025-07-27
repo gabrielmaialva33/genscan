@@ -1,4 +1,4 @@
-### Base ACL API HTTP Requests
+### Genscan API HTTP Requests
 ### Base URL: http://localhost:3333
 ###
 ### Authentication: Most endpoints require JWT Bearer token
@@ -17,6 +17,9 @@
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MjE5MDY4NywiZXhwIjoxNzUyMTkxNTg3fQ.mN5_LyaxP1nZ46wWjRFVVB26E-0FD9vXJ7J5JlkE8AE
 @userId = 3
 @roleId = 3
+@familyTreeId = 550e8400-e29b-41d4-a716-446655440000
+@personId = 550e8400-e29b-41d4-a716-446655440001
+@importId = 550e8400-e29b-41d4-a716-446655440002
 
 ###############################################################################
 ### HEALTH ENDPOINTS
@@ -338,6 +341,210 @@ Content-Type: image/jpeg
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ###############################################################################
+### FAMILY TREE MANAGEMENT ENDPOINTS (Requires Authentication)
+###############################################################################
+
+### List Family Trees
+GET {{baseUrl}}/api/v1/family-trees
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List Family Trees with Pagination
+GET {{baseUrl}}/api/v1/family-trees?page=1&perPage=10
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Search Family Trees
+GET {{baseUrl}}/api/v1/family-trees?search=silva
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get Family Tree by ID
+GET {{baseUrl}}/api/v1/family-trees/{{familyTreeId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create Family Tree
+POST {{baseUrl}}/api/v1/family-trees
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Silva Family Tree",
+  "description": "Family tree of the Silva family from São Paulo",
+  "privacy": "private",
+  "settings": {
+    "theme": "light",
+    "default_view": "tree"
+  }
+}
+
+### Update Family Tree
+PUT {{baseUrl}}/api/v1/family-trees/{{familyTreeId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Silva Family Tree",
+  "description": "Updated description",
+  "privacy": "family"
+}
+
+### Delete Family Tree
+DELETE {{baseUrl}}/api/v1/family-trees/{{familyTreeId}}
+Authorization: Bearer {{token}}
+
+###############################################################################
+### PEOPLE MANAGEMENT ENDPOINTS (Requires Authentication)
+###############################################################################
+
+### List People
+GET {{baseUrl}}/api/v1/people
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List People with Pagination
+GET {{baseUrl}}/api/v1/people?page=1&perPage=20
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Search People by Name
+GET {{baseUrl}}/api/v1/people?search=joão
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get Person by ID
+GET {{baseUrl}}/api/v1/people/{{personId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create Person
+POST {{baseUrl}}/api/v1/people
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "full_name": "João Silva",
+  "national_id": "12345678901",
+  "birth_date": "1980-01-15",
+  "birth_place": "São Paulo, SP",
+  "gender": "male"
+}
+
+### Update Person
+PUT {{baseUrl}}/api/v1/people/{{personId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "full_name": "João Silva Santos",
+  "birth_date": "1980-01-15",
+  "death_date": "2023-12-01",
+  "death_place": "Rio de Janeiro, RJ"
+}
+
+###############################################################################
+### SEARCH ENDPOINTS (Requires Authentication)
+###############################################################################
+
+### Search People by Name
+GET {{baseUrl}}/api/v1/people/search?name=joão
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Search People by Name with Pagination
+GET {{baseUrl}}/api/v1/people/search?name=silva&page=1&perPage=50
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Search by Mother Name (External API)
+GET {{baseUrl}}/api/v1/people/search/mother?mother_name=maria+silva
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Search by Mother Name with Limit
+GET {{baseUrl}}/api/v1/people/search/mother?mother_name=maria+silva&limit=20
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Search by CPF (External API)
+GET {{baseUrl}}/api/v1/people/search/cpf?cpf=12345678901
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###############################################################################
+### IMPORT ENDPOINTS (Requires Authentication)
+###############################################################################
+
+### Import Person from CPF
+# Imports person data and relatives from Brazilian API
+POST {{baseUrl}}/api/v1/imports/cpf
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "cpf": "12345678901",
+  "family_tree_id": "{{familyTreeId}}",
+  "import_relatives": true,
+  "merge_duplicates": true
+}
+
+### Import from CPF (Without Relatives)
+POST {{baseUrl}}/api/v1/imports/cpf
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "cpf": "98765432109",
+  "family_tree_id": "{{familyTreeId}}",
+  "import_relatives": false
+}
+
+### Import People by Mother Name
+# Imports multiple people found by mother name search
+POST {{baseUrl}}/api/v1/imports/mother-name
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "mother_name": "Maria da Silva",
+  "family_tree_id": "{{familyTreeId}}",
+  "limit": 10,
+  "merge_duplicates": true
+}
+
+### Import Full Genealogy Tree (Async)
+# Imports complete family tree recursively - queued for background processing
+POST {{baseUrl}}/api/v1/imports/full-tree
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "cpf": "12345678901",
+  "family_tree_id": "{{familyTreeId}}",
+  "max_depth": 3,
+  "max_people": 500,
+  "merge_duplicates": true
+}
+
+### Import Full Tree with Custom Limits
+POST {{baseUrl}}/api/v1/imports/full-tree
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "cpf": "12345678901",
+  "family_tree_id": "{{familyTreeId}}",
+  "max_depth": 5,
+  "max_people": 1000
+}
+
+### Check Import Status
+GET {{baseUrl}}/api/v1/imports/{{importId}}/status
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###############################################################################
 ### EXAMPLE RESPONSES
 ###############################################################################
 
@@ -429,4 +636,96 @@ Content-Type: image/jpeg
 #       "message": "Resource not found"
 #     }
 #   ]
+# }
+
+### Success Response - Family Tree
+# {
+#   "id": "550e8400-e29b-41d4-a716-446655440000",
+#   "name": "Silva Family Tree",
+#   "description": "Family tree of the Silva family from São Paulo",
+#   "owner_id": 1,
+#   "privacy": "private",
+#   "settings": {
+#     "theme": "light",
+#     "default_view": "tree"
+#   },
+#   "created_at": "2024-01-01T00:00:00.000Z",
+#   "updated_at": "2024-01-01T00:00:00.000Z"
+# }
+
+### Success Response - Person
+# {
+#   "id": "550e8400-e29b-41d4-a716-446655440001",
+#   "full_name": "João Silva",
+#   "national_id": "12345678901",
+#   "birth_date": "1980-01-15",
+#   "death_date": null,
+#   "birth_place": "São Paulo, SP",
+#   "death_place": null,
+#   "gender": "male",
+#   "created_by": 1,
+#   "created_at": "2024-01-01T00:00:00.000Z",
+#   "updated_at": "2024-01-01T00:00:00.000Z"
+# }
+
+### Success Response - Import Result
+# {
+#   "import_id": "550e8400-e29b-41d4-a716-446655440002",
+#   "status": "success",
+#   "persons_created": 15,
+#   "relationships_created": 28,
+#   "persons_updated": 3,
+#   "duplicates_found": 2,
+#   "errors": []
+# }
+
+### Success Response - Import Queued (Full Tree)
+# {
+#   "import_id": "550e8400-e29b-41d4-a716-446655440002",
+#   "status": "queued",
+#   "message": "Import job queued successfully. Use import_id 550e8400-e29b-41d4-a716-446655440002 to check status."
+# }
+
+### Success Response - Import Status
+# {
+#   "id": "550e8400-e29b-41d4-a716-446655440002",
+#   "status": "processing",
+#   "persons_created": 45,
+#   "relationships_created": 89,
+#   "persons_updated": 12,
+#   "duplicates_found": 5,
+#   "error_message": null,
+#   "import_summary": {
+#     "total_levels": 3,
+#     "tree_structure": [...]
+#   },
+#   "created_at": "2024-01-01T00:00:00.000Z",
+#   "completed_at": null
+# }
+
+### Success Response - Search by Mother Name
+# [
+#   {
+#     "name": "João Silva Santos",
+#     "cpf": "12345678901",
+#     "mother_name": "Maria da Silva",
+#     "birth_date": "1980-01-15"
+#   },
+#   {
+#     "name": "José Silva",
+#     "cpf": "98765432109",
+#     "mother_name": "Maria da Silva",
+#     "birth_date": "1982-03-20"
+#   }
+# ]
+
+### Success Response - Search by CPF
+# {
+#   "name": "João Silva Santos",
+#   "cpf": "12345678901",
+#   "birth_date": "1980-01-15",
+#   "mother_name": "Maria da Silva",
+#   "father_name": "José Santos",
+#   "gender": "M",
+#   "birth_place": "São Paulo, SP"
 # }
