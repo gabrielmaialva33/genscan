@@ -18,10 +18,10 @@ export default class SearchController {
   }
 
   async searchByMother({ request, response }: HttpContext) {
-    const { mother_name, limit } = await searchByMotherValidator.validate(request.all())
+    const { mother_name: motherName, limit } = await searchByMotherValidator.validate(request.all())
 
     const service = await app.container.make(SearchPeopleService)
-    const people = await service.searchByMotherName(mother_name, limit)
+    const people = await service.searchByMotherName(motherName, limit)
 
     return response.json(people)
   }

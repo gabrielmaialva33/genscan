@@ -18,7 +18,7 @@ export default class PeopleController {
     const direction = request.input('order', 'desc')
     const search = request.input('search', undefined)
     const gender = request.input('gender', undefined)
-    const is_living = request.input('is_living', undefined)
+    const isLiving = request.input('is_living', undefined)
 
     const user = auth.user!
 
@@ -30,7 +30,7 @@ export default class PeopleController {
       direction,
       search,
       gender,
-      is_living: is_living !== undefined ? is_living === 'true' : undefined,
+      is_living: isLiving !== undefined ? isLiving === 'true' : undefined,
       created_by: user.id,
     })
 

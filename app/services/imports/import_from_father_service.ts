@@ -128,7 +128,12 @@ export default class ImportFromFatherService {
       }
 
       // Set final status
-      if (progress.errors && progress.errors.length > 0 && progress.persons_created === 0 && progress.persons_updated === 0) {
+      if (
+        progress.errors &&
+        progress.errors.length > 0 &&
+        progress.persons_created === 0 &&
+        progress.persons_updated === 0
+      ) {
         progress.status = 'failed'
       } else if (progress.errors && progress.errors.length > 0) {
         progress.status = 'partial'

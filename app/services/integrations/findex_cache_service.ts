@@ -113,7 +113,9 @@ export default class FindexCacheService {
   /**
    * Get cached father search data
    */
-  async getCachedFatherSearchData(fatherName: string): Promise<FindexMotherSearchResponse[] | null> {
+  async getCachedFatherSearchData(
+    fatherName: string
+  ): Promise<FindexMotherSearchResponse[] | null> {
     const key = this.FATHER_SEARCH_KEY(fatherName)
     const cached = await redis.get(key)
 
@@ -339,7 +341,8 @@ export default class FindexCacheService {
         : 0
 
     const totalHits = stats.cpf_cache_hits + stats.mother_search_hits + stats.father_search_hits
-    const totalRequests = totalHits + stats.cpf_cache_misses + stats.mother_search_misses + stats.father_search_misses
+    const totalRequests =
+      totalHits + stats.cpf_cache_misses + stats.mother_search_misses + stats.father_search_misses
     const overallHitRate = totalRequests > 0 ? (totalHits / totalRequests) * 100 : 0
 
     return {
