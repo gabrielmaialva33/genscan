@@ -1,6 +1,7 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import FindexClient from '#services/integrations/findex_client'
+import SiblingValidationService from '#services/imports/sibling_validation_service'
 import { FindexPersonResponse } from '#interfaces/findex_interface'
 import IPerson from '#interfaces/person_interface'
 
@@ -36,7 +37,12 @@ interface EnrichedPersonData {
  */
 @inject()
 export default class DataEnrichmentService {
-  constructor(private findexClient: FindexClient) {}
+  private readonly MAX_SIBLINGS_PER_SEARCH = 10
+
+  constructor(
+    private findexClient: FindexClient,
+    private siblingValidation: SiblingValidationService
+  ) {}
 
   /**
    * Enrich person data using all available sources
@@ -64,13 +70,27 @@ export default class DataEnrichmentService {
         }
       }
 
-      // If we have mother name, search for siblings
+      // Search for siblings using parent names (mother and/or father)
       const motherName = enrichedData.person.mother_name || context.motherName
-      if (motherName && motherName !== 'SEM INFORMAÇÃO') {
-        const motherSearchData = await this.enrichFromMotherSearch(motherName, context.cpf)
-        if (motherSearchData) {
-          enrichedData = this.mergePersonData(enrichedData, motherSearchData)
-          sourcesUsed.push('mother_search')
+      const fatherName = enrichedData.person.father_name || context.fatherName
+
+      if (
+        (motherName && motherName !== 'SEM INFORMAÇÃO') ||
+        (fatherName && fatherName !== 'SEM INFORMAÇÃO')
+      ) {
+        const parentSearchData = await this.enrichFromParentSearches(
+          {
+            motherName,
+            fatherName,
+            cpf: context.cpf,
+            birthDate: context.birthDate,
+          },
+          enrichedData.person
+        )
+
+        if (parentSearchData) {
+          enrichedData = this.mergePersonData(enrichedData, parentSearchData)
+          sourcesUsed.push('parent_search_validated')
         }
       }
 
@@ -130,50 +150,128 @@ export default class DataEnrichmentService {
   }
 
   /**
-   * Enrich data from mother name search
+   * Enrich data from parent searches with sibling validation
    */
-  private async enrichFromMotherSearch(
-    motherName: string,
-    excludeCpf?: string
+  private async enrichFromParentSearches(
+    context: EnrichmentContext,
+    knownPersonData?: Partial<IPerson.CreatePayload>
   ): Promise<EnrichedPersonData | null> {
     try {
-      const motherSearchResults = await this.findexClient.searchByMotherName(motherName)
-      if (!motherSearchResults || motherSearchResults.length === 0) return null
+      const siblingCandidates = new Map<string, any>()
+      const { motherName, fatherName, cpf: excludeCpf, birthDate } = context
 
-      // Find siblings (same mother, different CPF)
-      const siblings = motherSearchResults
-        .filter((person) => person.CPF !== excludeCpf)
-        .map((person) => ({
-          cpf: person.CPF,
-          name: this.normalizeValue(person.NOME) || '',
-          birthDate: person.NASCIMENTO,
+      // Search by mother name
+      if (motherName && motherName !== 'SEM INFORMAÇÃO') {
+        logger.info(`Searching siblings by mother: ${motherName}`)
+        const motherResults = await this.findexClient.searchByMotherName(motherName)
+
+        motherResults.forEach((person) => {
+          if (person.CPF !== excludeCpf) {
+            siblingCandidates.set(person.CPF, {
+              cpf: person.CPF,
+              name: this.normalizeValue(person.NOME) || '',
+              birthDate: person.NASCIMENTO,
+              motherName: this.normalizeValue(person.MAE),
+              fatherName: this.normalizeValue(person.PAI),
+              foundByMother: true,
+              foundByFather: false,
+              rawData: person,
+            })
+          }
+        })
+        logger.info(`Found ${siblingCandidates.size} candidates by mother name`)
+      }
+
+      // Search by father name
+      if (fatherName && fatherName !== 'SEM INFORMAÇÃO') {
+        logger.info(`Searching siblings by father: ${fatherName}`)
+        const fatherResults = await this.findexClient.searchByFatherName(fatherName)
+
+        fatherResults.forEach((person) => {
+          if (person.CPF !== excludeCpf) {
+            if (siblingCandidates.has(person.CPF)) {
+              // Already found by mother, mark as found by both
+              siblingCandidates.get(person.CPF).foundByFather = true
+            } else {
+              // New candidate found only by father
+              siblingCandidates.set(person.CPF, {
+                cpf: person.CPF,
+                name: this.normalizeValue(person.NOME) || '',
+                birthDate: person.NASCIMENTO,
+                motherName: this.normalizeValue(person.MAE),
+                fatherName: this.normalizeValue(person.PAI),
+                foundByMother: false,
+                foundByFather: true,
+                rawData: person,
+              })
+            }
+          }
+        })
+        logger.info(`Total candidates after father search: ${siblingCandidates.size}`)
+      }
+
+      // Validate siblings
+      const candidates = Array.from(siblingCandidates.values())
+      if (candidates.length === 0) {
+        return null
+      }
+
+      // Prepare known person data for validation
+      const knownPerson = {
+        cpf: excludeCpf || '',
+        birthDate: birthDate || knownPersonData?.birth_date,
+        motherName: motherName,
+        fatherName: fatherName,
+      }
+
+      // Validate all candidates
+      const validatedSiblings = await this.siblingValidation.validateMultipleSiblings(
+        knownPerson,
+        candidates,
+        { motherName, fatherName }
+      )
+
+      // Log validation results
+      logger.info(
+        `Sibling validation complete: ${validatedSiblings.length} valid siblings from ${candidates.length} candidates`
+      )
+
+      // Take only the top validated siblings
+      const topSiblings = validatedSiblings
+        .slice(0, this.MAX_SIBLINGS_PER_SEARCH)
+        .map((result) => ({
+          cpf: result.candidate.cpf,
+          name: result.candidate.name,
+          birthDate: result.candidate.birthDate,
+          confidenceScore: result.confidenceScore,
+          foundByBoth: result.foundByMother && result.foundByFather,
         }))
 
-      // If we find the person in the results, enrich their data
+      // Get person data from search results if available
       const personData = excludeCpf
-        ? motherSearchResults.find((p) => p.CPF === excludeCpf)
-        : motherSearchResults[0]
+        ? candidates.find((c) => c.rawData?.CPF === excludeCpf)?.rawData
+        : null
 
       return {
         person: personData
           ? {
               full_name: this.normalizeValue(personData.NOME) || undefined,
               national_id: personData.CPF,
-              mother_name: this.normalizeValue(personData.MAE) || undefined,
-              father_name: this.normalizeValue(personData.PAI) || undefined,
+              mother_name: this.normalizeValue(personData.MAE || motherName) || undefined,
+              father_name: this.normalizeValue(personData.PAI || fatherName) || undefined,
               gender: personData.SEXO as 'M' | 'F' | null,
             }
           : {},
         relatives: [],
-        siblings,
+        siblings: topSiblings,
         additionalInfo: {
-          hasMultipleSources: false,
-          sourcesUsed: ['mother_search'],
-          dataQuality: 'medium',
+          hasMultipleSources: !!(motherName && fatherName),
+          sourcesUsed: ['parent_search_validated'],
+          dataQuality: this.assessDataQualityFromSiblings(topSiblings),
         },
       }
     } catch (error) {
-      logger.error(`Failed to enrich from mother search ${motherName}`, error)
+      logger.error('Failed to enrich from parent searches', error)
       return null
     }
   }
@@ -303,6 +401,24 @@ export default class DataEnrichmentService {
     // Determine quality based on score
     if (score >= 8) return 'high'
     if (score >= 5) return 'medium'
+    return 'low'
+  }
+
+  /**
+   * Assess data quality from sibling validation results
+   */
+  private assessDataQualityFromSiblings(siblings: any[]): 'high' | 'medium' | 'low' {
+    if (siblings.length === 0) return 'low'
+
+    // Check if any siblings were found by both parents
+    const foundByBoth = siblings.some((s) => s.foundByBoth)
+
+    // Calculate average confidence score
+    const avgConfidence =
+      siblings.reduce((sum, s) => sum + (s.confidenceScore || 0), 0) / siblings.length
+
+    if (foundByBoth && avgConfidence >= 80) return 'high'
+    if (avgConfidence >= 70) return 'medium'
     return 'low'
   }
 
