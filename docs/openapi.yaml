@@ -1517,6 +1517,115 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+  /api/v1/family-trees/{id}/chart-data:
+    get:
+      operationId: getFamilyTreeChartData
+      summary: Get family tree chart data
+      description: |
+        Retrieve family tree data formatted for visualization with the family-chart library.
+        Returns an array of nodes with relationships in the format expected by D3.js-based genealogy charts.
+
+        Each node contains:
+        - `id`: Unique person identifier
+        - `data`: Person information (first_name, last_name, birthday, avatar, gender)
+        - `rels`: Relationships (father, mother, spouses[], children[])
+        - `main`: Boolean indicating if this is the main person (tree owner)
+      tags:
+        - Family Trees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Family tree ID
+      responses:
+        '200':
+          description: Chart data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - data
+                    - rels
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      description: Unique person identifier
+                    data:
+                      type: object
+                      required:
+                        - first_name
+                        - last_name
+                        - gender
+                      properties:
+                        first_name:
+                          type: string
+                          description: Person's first name
+                        last_name:
+                          type: string
+                          description: Person's last name (may be empty)
+                        birthday:
+                          type: string
+                          description: Birth year as string
+                          example: '1970'
+                        avatar:
+                          type: string
+                          format: uri
+                          description: Avatar URL (uses Avatar Placeholder API if no photo)
+                          example: 'https://avatar.iran.liara.run/public/boy?username=John'
+                        gender:
+                          type: string
+                          enum: ['M', 'F', 'O']
+                          description: Gender (M=Male, F=Female, O=Other/Unknown)
+                    rels:
+                      type: object
+                      properties:
+                        father:
+                          type: string
+                          format: uuid
+                          description: Father's person ID
+                        mother:
+                          type: string
+                          format: uuid
+                          description: Mother's person ID
+                        spouses:
+                          type: array
+                          items:
+                            type: string
+                            format: uuid
+                          description: Array of spouse IDs
+                        children:
+                          type: array
+                          items:
+                            type: string
+                            format: uuid
+                          description: Array of children IDs
+                    main:
+                      type: boolean
+                      description: Indicates if this person is the tree owner
+                      example: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Access denied to this family tree
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'You do not have permission to view this family tree'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
   /api/v1/people:
     get:
       operationId: listPeople

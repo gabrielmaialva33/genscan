@@ -394,6 +394,19 @@ Content-Type: application/json
 DELETE {{baseUrl}}/api/v1/family-trees/{{familyTreeId}}
 Authorization: Bearer {{token}}
 
+### Get Family Tree Chart Data
+# Returns family tree data formatted for visualization with family-chart library
+# Response: Array of nodes with relationships (D3.js format)
+GET {{baseUrl}}/api/v1/family-trees/{{familyTreeId}}/chart-data
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get Family Tree Chart Data (Real Example)
+# Replace with actual family tree ID from your database
+GET {{baseUrl}}/api/v1/family-trees/2294d24e-73eb-4d0a-815c-5fc9a1fadb7e/chart-data
+Authorization: Bearer {{token}}
+Accept: application/json
+
 ###############################################################################
 ### PEOPLE MANAGEMENT ENDPOINTS (Requires Authentication)
 ###############################################################################
