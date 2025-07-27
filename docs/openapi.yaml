@@ -468,7 +468,7 @@ components:
       description: Page number for pagination
 
     perPageParam:
-      name: perPage
+      name: per_page
       in: query
       schema:
         type: integer
@@ -478,7 +478,7 @@ components:
       description: Number of items per page
 
     sortByParam:
-      name: sortBy
+      name: sort_by
       in: query
       schema:
         type: string
