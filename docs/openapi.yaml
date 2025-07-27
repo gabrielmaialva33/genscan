@@ -1,17 +1,20 @@
 openapi: 3.1.0
 info:
-  title: Base ACL API
+  title: Genscan API
   version: 1.0.0
   description: |
-    ## Welcome to Base ACL API
+    ## Welcome to Genscan API
 
-    A robust authentication and access control API built with AdonisJS v6. This API provides comprehensive user management, role-based access control, and file management capabilities.
+    A modern family tree builder with Brazilian genealogy data integration. Built with AdonisJS v6, this API provides comprehensive genealogy management, family tree creation, and integration with Brazilian genealogy databases.
 
     ### Key Features
 
     - **JWT Authentication**: Secure token-based authentication with refresh tokens
     - **Role-Based Access Control**: Fine-grained permissions with multiple user roles
-    - **User Management**: Complete CRUD operations for user accounts
+    - **Family Tree Management**: Create and manage genealogical family trees
+    - **People Management**: Manage person records with detailed genealogical data
+    - **Brazilian Data Integration**: Import data from Brazilian genealogy APIs (CPF/Mother name search)
+    - **Recursive Tree Import**: Import complete family trees recursively from a single CPF
     - **File Management**: Secure file upload with automatic categorization
     - **Health Monitoring**: Built-in health check endpoints
 
@@ -103,6 +106,208 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Role'
+
+    FamilyTree:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '550e8400-e29b-41d4-a716-446655440000'
+        name:
+          type: string
+          example: 'Silva Family Tree'
+        description:
+          type: ['string', 'null']
+          example: 'Family tree of the Silva family from São Paulo'
+        owner_id:
+          type: integer
+          example: 1
+        privacy:
+          type: string
+          enum: [private, public, family]
+          example: 'private'
+        settings:
+          type: ['object', 'null']
+          properties:
+            theme:
+              type: string
+              example: 'light'
+            default_view:
+              type: string
+              example: 'tree'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '550e8400-e29b-41d4-a716-446655440001'
+        full_name:
+          type: string
+          example: 'João Silva'
+        national_id:
+          type: ['string', 'null']
+          example: '12345678901'
+        birth_date:
+          type: ['string', 'null']
+          format: date
+          example: '1980-01-15'
+        death_date:
+          type: ['string', 'null']
+          format: date
+        birth_place:
+          type: ['string', 'null']
+          example: 'São Paulo, SP'
+        death_place:
+          type: ['string', 'null']
+        gender:
+          type: ['string', 'null']
+          enum: [male, female, other]
+          example: 'male'
+        created_by:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ImportFromCPF:
+      type: object
+      required:
+        - cpf
+        - family_tree_id
+      properties:
+        cpf:
+          type: string
+          pattern: '^[0-9]{11}$'
+          example: '12345678901'
+        family_tree_id:
+          type: string
+          format: uuid
+        import_relatives:
+          type: boolean
+          default: true
+          description: 'Import relatives found in the API'
+        merge_duplicates:
+          type: boolean
+          default: true
+          description: 'Merge with existing people if duplicates found'
+
+    ImportFromMother:
+      type: object
+      required:
+        - mother_name
+        - family_tree_id
+      properties:
+        mother_name:
+          type: string
+          example: 'Maria da Silva'
+        family_tree_id:
+          type: string
+          format: uuid
+        limit:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 100
+        merge_duplicates:
+          type: boolean
+          default: true
+
+    ImportFullTree:
+      type: object
+      required:
+        - cpf
+        - family_tree_id
+      properties:
+        cpf:
+          type: string
+          pattern: '^[0-9]{11}$'
+          example: '12345678901'
+        family_tree_id:
+          type: string
+          format: uuid
+        max_depth:
+          type: integer
+          default: 3
+          minimum: 1
+          maximum: 5
+          description: 'Maximum depth of tree traversal'
+        max_people:
+          type: integer
+          default: 500
+          minimum: 1
+          maximum: 1000
+          description: 'Maximum number of people to import'
+        merge_duplicates:
+          type: boolean
+          default: true
+
+    ImportResult:
+      type: object
+      properties:
+        import_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [success, partial, failed, queued]
+        persons_created:
+          type: integer
+        relationships_created:
+          type: integer
+        persons_updated:
+          type: integer
+        duplicates_found:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              person:
+                type: string
+              error:
+                type: string
+
+    ImportStatus:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, processing, success, partial, failed]
+        persons_created:
+          type: integer
+        relationships_created:
+          type: integer
+        persons_updated:
+          type: integer
+        duplicates_found:
+          type: integer
+        error_message:
+          type: ['string', 'null']
+        import_summary:
+          type: ['object', 'null']
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: ['string', 'null']
+          format: date-time
 
     Role:
       type: object
@@ -339,6 +544,14 @@ tags:
     description: Current user profile operations
   - name: Permissions
     description: Permission management operations (admin only)
+  - name: Family Trees
+    description: Family tree management operations
+  - name: People
+    description: Person records management
+  - name: Search
+    description: Search for people by various criteria
+  - name: Import
+    description: Import genealogy data from Brazilian APIs
 
 paths:
   /:
@@ -1135,3 +1348,548 @@ paths:
                   - message: 'File size should be less than 5MB'
                     field: 'file'
                     rule: 'size'
+
+  /api/v1/family-trees:
+    get:
+      operationId: listFamilyTrees
+      summary: List family trees
+      description: Get a paginated list of family trees for the authenticated user
+      tags:
+        - Family Trees
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/perPageParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: Family tree list retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagination'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FamilyTree'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      operationId: createFamilyTree
+      summary: Create family tree
+      description: Create a new family tree
+      tags:
+        - Family Trees
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: 'Silva Family Tree'
+                description:
+                  type: ['string', 'null']
+                  example: 'Family tree of the Silva family'
+                privacy:
+                  type: string
+                  enum: [private, public, family]
+                  default: 'private'
+                settings:
+                  type: ['object', 'null']
+      responses:
+        '201':
+          description: Family tree created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyTree'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/family-trees/{id}:
+    get:
+      operationId: getFamilyTreeById
+      summary: Get family tree by ID
+      description: Retrieve a specific family tree's details
+      tags:
+        - Family Trees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Family tree ID
+      responses:
+        '200':
+          description: Family tree details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyTree'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      operationId: updateFamilyTree
+      summary: Update family tree
+      description: Update family tree details
+      tags:
+        - Family Trees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: ['string', 'null']
+                privacy:
+                  type: string
+                  enum: [private, public, family]
+                settings:
+                  type: ['object', 'null']
+      responses:
+        '200':
+          description: Family tree updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyTree'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      operationId: deleteFamilyTree
+      summary: Delete family tree
+      description: Delete a family tree and all its related data
+      tags:
+        - Family Trees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Family tree deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/v1/people:
+    get:
+      operationId: listPeople
+      summary: List people
+      description: Get a paginated list of people records
+      tags:
+        - People
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/perPageParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: People list retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagination'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Person'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      operationId: createPerson
+      summary: Create person
+      description: Create a new person record
+      tags:
+        - People
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - full_name
+              properties:
+                full_name:
+                  type: string
+                  example: 'João Silva'
+                national_id:
+                  type: ['string', 'null']
+                  pattern: '^[0-9]{11}$'
+                birth_date:
+                  type: ['string', 'null']
+                  format: date
+                death_date:
+                  type: ['string', 'null']
+                  format: date
+                birth_place:
+                  type: ['string', 'null']
+                death_place:
+                  type: ['string', 'null']
+                gender:
+                  type: ['string', 'null']
+                  enum: [male, female, other]
+      responses:
+        '201':
+          description: Person created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/people/{id}:
+    get:
+      operationId: getPersonById
+      summary: Get person by ID
+      description: Retrieve a specific person's details
+      tags:
+        - People
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Person details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      operationId: updatePerson
+      summary: Update person
+      description: Update person details
+      tags:
+        - People
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                national_id:
+                  type: ['string', 'null']
+                  pattern: '^[0-9]{11}$'
+                birth_date:
+                  type: ['string', 'null']
+                  format: date
+                death_date:
+                  type: ['string', 'null']
+                  format: date
+                birth_place:
+                  type: ['string', 'null']
+                death_place:
+                  type: ['string', 'null']
+                gender:
+                  type: ['string', 'null']
+                  enum: [male, female, other]
+      responses:
+        '200':
+          description: Person updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/people/search:
+    get:
+      operationId: searchPeople
+      summary: Search people
+      description: Search for people by name
+      tags:
+        - Search
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name to search for
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/perPageParam'
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagination'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Person'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/v1/people/search/mother:
+    get:
+      operationId: searchByMotherName
+      summary: Search by mother name
+      description: Search for people by mother's name using external API
+      tags:
+        - Search
+      parameters:
+        - name: mother_name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Mother's name to search for
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    cpf:
+                      type: string
+                    mother_name:
+                      type: string
+                    birth_date:
+                      type: ['string', 'null']
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/v1/people/search/cpf:
+    get:
+      operationId: searchByCPF
+      summary: Search by CPF
+      description: Search for a person by CPF using external API
+      tags:
+        - Search
+      parameters:
+        - name: cpf
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{11}$'
+          description: CPF to search for
+      responses:
+        '200':
+          description: Person data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  cpf:
+                    type: string
+                  birth_date:
+                    type: ['string', 'null']
+                  mother_name:
+                    type: ['string', 'null']
+                  father_name:
+                    type: ['string', 'null']
+                  gender:
+                    type: ['string', 'null']
+                  birth_place:
+                    type: ['string', 'null']
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Person not found
+
+  /api/v1/imports/cpf:
+    post:
+      operationId: importFromCPF
+      summary: Import person from CPF
+      description: Import person data and relatives from Brazilian API using CPF
+      tags:
+        - Import
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportFromCPF'
+      responses:
+        '200':
+          description: Import completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/imports/mother-name:
+    post:
+      operationId: importFromMotherName
+      summary: Import people by mother name
+      description: Import multiple people from Brazilian API using mother's name search
+      tags:
+        - Import
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportFromMother'
+      responses:
+        '200':
+          description: Import completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/imports/full-tree:
+    post:
+      operationId: importFullTree
+      summary: Import full genealogy tree
+      description: |
+        Import a complete genealogy tree starting from a CPF.
+        This endpoint queues the import job for asynchronous processing.
+        Use the returned import_id to check the status.
+        
+        The import will traverse the tree using BFS (Breadth-First Search)
+        up to the specified depth, importing all relatives found.
+      tags:
+        - Import
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportFullTree'
+      responses:
+        '202':
+          description: Import job queued successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  import_id:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [queued]
+                  message:
+                    type: string
+                    example: 'Import job queued successfully. Use import_id to check status.'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/imports/{id}/status:
+    get:
+      operationId: getImportStatus
+      summary: Get import status
+      description: Check the status of an import job
+      tags:
+        - Import
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Import job ID
+      responses:
+        '200':
+          description: Import status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportStatus'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
