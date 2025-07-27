@@ -31,6 +31,12 @@ export default interface LucidRepositoryInterface<T extends typeof BaseModel> {
   createMany(payload: Partial<ModelAttributes<InstanceType<T>>>[]): Promise<InstanceType<T>[]>
 
   /**
+   * Find a model by its ID.
+   * @param id - The model's primary key value.
+   */
+  find(id: string | number): Promise<InstanceType<T> | null>
+
+  /**
    * Find a model by a specific field and value.
    * @param field - The field to search by.
    * @param value - The value to match.

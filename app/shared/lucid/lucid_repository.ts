@@ -43,6 +43,10 @@ export default class LucidRepository<T extends typeof BaseModel>
     return this.model.createMany(payload)
   }
 
+  async find(id: string | number): Promise<InstanceType<T> | null> {
+    return this.model.find(id)
+  }
+
   async findBy<K extends ModelKeys<T>>(
     field: K,
     value: ModelAttributes<InstanceType<T>>[K],
@@ -109,9 +113,11 @@ export default class LucidRepository<T extends typeof BaseModel>
       return null
     }
 
-    // Check if the model has an is_deleted column
-    if ('is_deleted' in record.$attributes) {
-      return record.merge({ is_deleted: true } as any).save()
+    // Check if the model supports soft delete
+    if ('is_deleted' in record && typeof record.is_deleted === 'boolean') {
+      // Directly set the property and save
+      Object.assign(record, { is_deleted: true })
+      return await record.save()
     }
 
     // Fall back to hard delete if no soft delete support
