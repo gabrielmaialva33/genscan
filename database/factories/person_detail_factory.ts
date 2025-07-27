@@ -72,16 +72,16 @@ export const PersonDetailFactory = factory
       social_media: faker.datatype.boolean({ probability: 0.4 })
         ? {
             facebook: faker.datatype.boolean({ probability: 0.3 })
-              ? faker.internet.userName()
+              ? faker.internet.username()
               : undefined,
             instagram: faker.datatype.boolean({ probability: 0.3 })
-              ? faker.internet.userName()
+              ? faker.internet.username()
               : undefined,
             twitter: faker.datatype.boolean({ probability: 0.2 })
-              ? faker.internet.userName()
+              ? faker.internet.username()
               : undefined,
             linkedin: faker.datatype.boolean({ probability: 0.2 })
-              ? faker.internet.userName()
+              ? faker.internet.username()
               : undefined,
           }
         : null,

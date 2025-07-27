@@ -9,12 +9,9 @@ export default class RelationshipSeeder extends BaseSeeder {
   static environment = ['development', 'testing']
 
   async run() {
-    // Check if relationships already exist
-    const existingRelationships = await Relationship.query().count('* as total')
-    if (existingRelationships[0].$extras.total > 0) {
-      logger.info('Relationships already seeded, skipping...')
-      return
-    }
+    // Clear existing relationships to avoid duplicates during development
+    await Relationship.query().delete()
+    logger.info('Cleared existing relationships...')
 
     // Get all family trees
     const familyTrees = await FamilyTree.query().orderBy('created_at', 'asc')
@@ -64,23 +61,49 @@ export default class RelationshipSeeder extends BaseSeeder {
             // Create bidirectional spouse relationship
             const marriageDate = this.calculateMarriageDate(males[i], females[i])
 
-            await Relationship.create({
-              person_id: males[i].id,
-              related_person_id: females[i].id,
-              relationship_type: 'spouse',
-              family_tree_id: tree.id,
-              start_date: marriageDate,
-              status: 'active',
-            })
+            // Check if relationship already exists
+            const existingRelationship = await Relationship.query()
+              .where('person_id', males[i].id)
+              .where('related_person_id', females[i].id)
+              .where('relationship_type', 'spouse')
+              .where('family_tree_id', tree.id)
+              .first()
 
-            await Relationship.create({
-              person_id: females[i].id,
-              related_person_id: males[i].id,
-              relationship_type: 'spouse',
-              family_tree_id: tree.id,
-              start_date: marriageDate,
-              status: 'active',
-            })
+            if (!existingRelationship) {
+              try {
+                await Relationship.create({
+                  person_id: males[i].id,
+                  related_person_id: females[i].id,
+                  relationship_type: 'spouse',
+                  family_tree_id: tree.id,
+                  start_date: marriageDate,
+                  status: 'active',
+                })
+              } catch (error) {
+                logger.error(`Failed to create spouse relationship: ${males[i].id} -> ${females[i].id}`)
+                logger.error(`Error: ${error.message}`)
+                throw error
+              }
+            }
+
+            // Check if reverse relationship already exists
+            const existingReverseRelationship = await Relationship.query()
+              .where('person_id', females[i].id)
+              .where('related_person_id', males[i].id)
+              .where('relationship_type', 'spouse')
+              .where('family_tree_id', tree.id)
+              .first()
+
+            if (!existingReverseRelationship) {
+              await Relationship.create({
+                person_id: females[i].id,
+                related_person_id: males[i].id,
+                relationship_type: 'spouse',
+                family_tree_id: tree.id,
+                start_date: marriageDate,
+                status: 'active',
+              })
+            }
 
             logger.debug(
               `    ✓ Created spouse relationship: ${males[i].full_name} ↔ ${females[i].full_name}`
@@ -96,23 +119,42 @@ export default class RelationshipSeeder extends BaseSeeder {
       if (person.mother_name) {
         const mother = people.find((p) => p.full_name === person.mother_name && p.gender === 'F')
         if (mother) {
-          // Mother -> Child
-          await Relationship.create({
-            person_id: mother.id,
-            related_person_id: person.id,
-            relationship_type: 'parent',
-            family_tree_id: tree.id,
-            status: person.is_living ? 'active' : 'deceased',
-          })
+          // Check if parent-child relationship already exists
+          const existingParentRel = await Relationship.query()
+            .where('person_id', mother.id)
+            .where('related_person_id', person.id)
+            .where('relationship_type', 'parent')
+            .where('family_tree_id', tree.id)
+            .first()
 
-          // Child -> Mother
-          await Relationship.create({
-            person_id: person.id,
-            related_person_id: mother.id,
-            relationship_type: 'child',
-            family_tree_id: tree.id,
-            status: mother.is_living ? 'active' : 'deceased',
-          })
+          if (!existingParentRel) {
+            // Mother -> Child
+            await Relationship.create({
+              person_id: mother.id,
+              related_person_id: person.id,
+              relationship_type: 'parent',
+              family_tree_id: tree.id,
+              status: person.is_living ? 'active' : 'deceased',
+            })
+          }
+
+          const existingChildRel = await Relationship.query()
+            .where('person_id', person.id)
+            .where('related_person_id', mother.id)
+            .where('relationship_type', 'child')
+            .where('family_tree_id', tree.id)
+            .first()
+
+          if (!existingChildRel) {
+            // Child -> Mother
+            await Relationship.create({
+              person_id: person.id,
+              related_person_id: mother.id,
+              relationship_type: 'child',
+              family_tree_id: tree.id,
+              status: mother.is_living ? 'active' : 'deceased',
+            })
+          }
 
           logger.debug(`    ✓ Created parent-child: ${mother.full_name} → ${person.full_name}`)
         }
@@ -121,23 +163,42 @@ export default class RelationshipSeeder extends BaseSeeder {
       if (person.father_name) {
         const father = people.find((p) => p.full_name === person.father_name && p.gender === 'M')
         if (father) {
-          // Father -> Child
-          await Relationship.create({
-            person_id: father.id,
-            related_person_id: person.id,
-            relationship_type: 'parent',
-            family_tree_id: tree.id,
-            status: person.is_living ? 'active' : 'deceased',
-          })
+          // Check if parent-child relationship already exists
+          const existingParentRel = await Relationship.query()
+            .where('person_id', father.id)
+            .where('related_person_id', person.id)
+            .where('relationship_type', 'parent')
+            .where('family_tree_id', tree.id)
+            .first()
 
-          // Child -> Father
-          await Relationship.create({
-            person_id: person.id,
-            related_person_id: father.id,
-            relationship_type: 'child',
-            family_tree_id: tree.id,
-            status: father.is_living ? 'active' : 'deceased',
-          })
+          if (!existingParentRel) {
+            // Father -> Child
+            await Relationship.create({
+              person_id: father.id,
+              related_person_id: person.id,
+              relationship_type: 'parent',
+              family_tree_id: tree.id,
+              status: person.is_living ? 'active' : 'deceased',
+            })
+          }
+
+          const existingChildRel = await Relationship.query()
+            .where('person_id', person.id)
+            .where('related_person_id', father.id)
+            .where('relationship_type', 'child')
+            .where('family_tree_id', tree.id)
+            .first()
+
+          if (!existingChildRel) {
+            // Child -> Father
+            await Relationship.create({
+              person_id: person.id,
+              related_person_id: father.id,
+              relationship_type: 'child',
+              family_tree_id: tree.id,
+              status: father.is_living ? 'active' : 'deceased',
+            })
+          }
 
           logger.debug(`    ✓ Created parent-child: ${father.full_name} → ${person.full_name}`)
         }
@@ -145,6 +206,8 @@ export default class RelationshipSeeder extends BaseSeeder {
     }
 
     // Create sibling relationships
+    const processedSiblings = new Set<string>()
+    
     for (const person of people) {
       if (person.mother_name && person.father_name) {
         // Find siblings (same parents)
@@ -156,20 +219,26 @@ export default class RelationshipSeeder extends BaseSeeder {
         )
 
         for (const sibling of siblings) {
-          // Check if relationship already exists
-          const existing = await Relationship.query()
-            .where('person_id', person.id)
-            .where('related_person_id', sibling.id)
-            .where('relationship_type', 'sibling')
-            .first()
-
-          if (!existing) {
+          const relationshipKey = [person.id, sibling.id].sort().join('-')
+          
+          if (!processedSiblings.has(relationshipKey)) {
+            processedSiblings.add(relationshipKey)
+            
+            // Create bidirectional sibling relationships
             await Relationship.create({
               person_id: person.id,
               related_person_id: sibling.id,
               relationship_type: 'sibling',
               family_tree_id: tree.id,
               status: sibling.is_living ? 'active' : 'deceased',
+            })
+            
+            await Relationship.create({
+              person_id: sibling.id,
+              related_person_id: person.id,
+              relationship_type: 'sibling',
+              family_tree_id: tree.id,
+              status: person.is_living ? 'active' : 'deceased',
             })
 
             logger.debug(`    ✓ Created sibling: ${person.full_name} ↔ ${sibling.full_name}`)
@@ -179,11 +248,14 @@ export default class RelationshipSeeder extends BaseSeeder {
     }
 
     // Create grandparent relationships
+    const processedGrandparents = new Set<string>()
+    
     for (const person of people) {
       // Find grandparents through parents
       const parents = await Relationship.query()
         .where('related_person_id', person.id)
         .where('relationship_type', 'parent')
+        .where('family_tree_id', tree.id)
         .preload('person')
 
       for (const parentRel of parents) {
@@ -191,28 +263,36 @@ export default class RelationshipSeeder extends BaseSeeder {
         const grandparents = await Relationship.query()
           .where('related_person_id', parentRel.person_id)
           .where('relationship_type', 'parent')
+          .where('family_tree_id', tree.id)
           .preload('person')
 
         for (const gpRel of grandparents) {
-          // Grandparent -> Grandchild
-          await Relationship.create({
-            person_id: gpRel.person_id,
-            related_person_id: person.id,
-            relationship_type: 'grandparent',
-            family_tree_id: tree.id,
-            status: person.is_living && gpRel.person.is_living ? 'active' : 'deceased',
-          })
+          const relationshipKey = `${gpRel.person_id}-${person.id}-grandparent`
+          
+          if (!processedGrandparents.has(relationshipKey)) {
+            processedGrandparents.add(relationshipKey)
+            processedGrandparents.add(`${person.id}-${gpRel.person_id}-grandchild`)
+            
+            // Grandparent -> Grandchild
+            await Relationship.create({
+              person_id: gpRel.person_id,
+              related_person_id: person.id,
+              relationship_type: 'grandparent',
+              family_tree_id: tree.id,
+              status: person.is_living && gpRel.person.is_living ? 'active' : 'deceased',
+            })
 
-          // Grandchild -> Grandparent
-          await Relationship.create({
-            person_id: person.id,
-            related_person_id: gpRel.person_id,
-            relationship_type: 'grandchild',
-            family_tree_id: tree.id,
-            status: person.is_living && gpRel.person.is_living ? 'active' : 'deceased',
-          })
+            // Grandchild -> Grandparent
+            await Relationship.create({
+              person_id: person.id,
+              related_person_id: gpRel.person_id,
+              relationship_type: 'grandchild',
+              family_tree_id: tree.id,
+              status: person.is_living && gpRel.person.is_living ? 'active' : 'deceased',
+            })
 
-          logger.debug(`    ✓ Created grandparent: ${gpRel.person.full_name} → ${person.full_name}`)
+            logger.debug(`    ✓ Created grandparent: ${gpRel.person.full_name} → ${person.full_name}`)
+          }
         }
       }
     }
