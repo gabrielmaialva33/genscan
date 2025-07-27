@@ -61,14 +61,14 @@ graph TD
     UI --> API
     FC --> API
     IMPORT --> API
-    
+
     API --> GEN
     API --> IMPORT_SVC
     API --> TREE_SVC
-    
+
     GEN --> FINDEX
     GEN --> FUTURE
-    
+
     IMPORT_SVC --> DB
     TREE_SVC --> DB
     GEN --> CACHE
@@ -77,6 +77,7 @@ graph TD
 ## :sparkles: Features
 
 ### Core Features
+
 - **🌳 Interactive Family Trees**: Beautiful, interactive visualizations powered by D3.js
 - **🔍 Smart Data Import**: Import family data using Brazilian CPF or mother's name
 - **👨‍👩‍👧‍👦 Relationship Management**: Easily manage complex family relationships
@@ -84,18 +85,21 @@ graph TD
 - **🔒 Privacy Controls**: Control who can view and edit your family trees
 
 ### Data Integration
+
 - **Brazilian Genealogy API**: Integration with Findexbuscas for Brazilian family data
 - **Automatic Relationship Detection**: Smart algorithms to detect and create family relationships
 - **Duplicate Prevention**: Intelligent duplicate detection when importing data
 - **Data Enrichment**: Automatically enrich profiles with available public data
 
 ### Visualization Features
+
 - **Interactive Navigation**: Zoom, pan, and explore large family trees
 - **Custom Layouts**: Different visualization styles for your family tree
 - **Person Details**: Click on any person to view detailed information
 - **Generation Filters**: Focus on specific generations or branches
 
 ### Upcoming Features
+
 - **📸 Photo Albums**: Add photos and documents to family members
 - **📅 Timeline View**: See your family history in a timeline
 - **🌍 FamilySearch Integration**: Connect with the world's largest genealogy database
@@ -104,12 +108,14 @@ graph TD
 ## :computer: Technologies
 
 ### Backend
+
 - **[AdonisJS v6](https://adonisjs.com/)**: Robust Node.js framework
 - **[PostgreSQL](https://www.postgresql.org/)**: Reliable relational database
 - **[Redis](https://redis.io/)**: Caching and session management
 - **[Bull Queue](https://github.com/OptimalBits/bull)**: Background job processing
 
 ### Frontend
+
 - **[React 19](https://react.dev/)**: Modern UI library
 - **[Inertia.js](https://inertiajs.com/)**: Seamless SPA experience
 - **[family-chart](https://github.com/donatso/family-chart)**: D3.js-based family tree visualization
@@ -164,10 +170,11 @@ graph TD
    ```
 
 6. **Start the development server:**
+
    ```sh
    pnpm dev
    ```
-   
+
    Your application will be available at `http://localhost:3333`.
 
 ### 📜 Available Scripts

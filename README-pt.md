@@ -61,14 +61,14 @@ graph TD
     UI --> API
     FC --> API
     IMPORT --> API
-    
+
     API --> GEN
     API --> IMPORT_SVC
     API --> TREE_SVC
-    
+
     GEN --> FINDEX
     GEN --> FUTURE
-    
+
     IMPORT_SVC --> DB
     TREE_SVC --> DB
     GEN --> CACHE
@@ -77,6 +77,7 @@ graph TD
 ## :sparkles: Funcionalidades
 
 ### Funcionalidades Principais
+
 - **🌳 Árvores Genealógicas Interativas**: Visualizações bonitas e interativas com D3.js
 - **🔍 Importação Inteligente de Dados**: Importe dados familiares usando CPF ou nome da mãe
 - **👨‍👩‍👧‍👦 Gerenciamento de Relacionamentos**: Gerencie facilmente relacionamentos familiares complexos
@@ -84,18 +85,21 @@ graph TD
 - **🔒 Controles de Privacidade**: Controle quem pode visualizar e editar suas árvores
 
 ### Integração de Dados
+
 - **API de Genealogia Brasileira**: Integração com Findexbuscas para dados familiares brasileiros
 - **Detecção Automática de Relacionamentos**: Algoritmos inteligentes para detectar e criar relacionamentos familiares
 - **Prevenção de Duplicatas**: Detecção inteligente de duplicatas ao importar dados
 - **Enriquecimento de Dados**: Enriqueça automaticamente perfis com dados públicos disponíveis
 
 ### Recursos de Visualização
+
 - **Navegação Interativa**: Zoom, pan e explore grandes árvores genealógicas
 - **Layouts Personalizados**: Diferentes estilos de visualização para sua árvore
 - **Detalhes de Pessoas**: Clique em qualquer pessoa para ver informações detalhadas
 - **Filtros por Geração**: Foque em gerações ou ramos específicos
 
 ### Funcionalidades Futuras
+
 - **📸 Álbuns de Fotos**: Adicione fotos e documentos aos membros da família
 - **📅 Visualização em Timeline**: Veja a história da sua família em uma linha do tempo
 - **🌍 Integração com FamilySearch**: Conecte-se ao maior banco de dados genealógico do mundo
@@ -104,12 +108,14 @@ graph TD
 ## :computer: Tecnologias
 
 ### Backend
+
 - **[AdonisJS v6](https://adonisjs.com/)**: Framework Node.js robusto
 - **[PostgreSQL](https://www.postgresql.org/)**: Banco de dados relacional confiável
 - **[Redis](https://redis.io/)**: Cache e gerenciamento de sessões
 - **[Bull Queue](https://github.com/OptimalBits/bull)**: Processamento de jobs em background
 
 ### Frontend
+
 - **[React 19](https://react.dev/)**: Biblioteca moderna de UI
 - **[Inertia.js](https://inertiajs.com/)**: Experiência SPA perfeita
 - **[family-chart](https://github.com/donatso/family-chart)**: Visualização de árvore genealógica baseada em D3.js
@@ -164,10 +170,11 @@ graph TD
    ```
 
 6. **Inicie o servidor de desenvolvimento:**
+
    ```sh
    pnpm dev
    ```
-   
+
    Sua aplicação estará disponível em `http://localhost:3333`.
 
 ### 📜 Scripts Disponíveis
