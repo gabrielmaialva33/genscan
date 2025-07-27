@@ -1,4 +1,5 @@
 import { inject } from '@adonisjs/core'
+import { DateTime } from 'luxon'
 
 import PermissionCacheService from '#services/permissions/permission_cache_service'
 import PermissionInheritanceService from '#services/permissions/permission_inheritance_service'
@@ -205,7 +206,7 @@ export default class PermissionService {
       .preload('permissions', (query) => {
         query.where('granted', true)
         query.where((subQuery) => {
-          subQuery.whereNull('expires_at').orWhere('expires_at', '>', new Date())
+          subQuery.whereNull('expires_at').orWhere('expires_at', '>', DateTime.now().toSQL())
         })
       })
       .preload('roles', (query) => {

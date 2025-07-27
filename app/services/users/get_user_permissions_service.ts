@@ -1,5 +1,6 @@
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 
 import db from '@adonisjs/lucid/services/db'
 import UsersRepository from '#repositories/users_repository'
@@ -29,7 +30,7 @@ export default class GetUserPermissionsService {
       .where('user_permissions.granted', true)
       .where(function (query) {
         query.whereNull('user_permissions.expires_at')
-        query.orWhere('user_permissions.expires_at', '>', new Date())
+        query.orWhere('user_permissions.expires_at', '>', DateTime.now().toSQL())
       })
       .select(
         'permissions.id',

@@ -40,7 +40,7 @@ export default class AuthEventService {
       user,
       method,
       isAdmin,
-      timestamp: new Date(),
+      timestamp: DateTime.now().toJSDate(),
       ...extractRequestMetadata(ctx),
       ...additionalData,
     }
@@ -56,7 +56,7 @@ export default class AuthEventService {
       email,
       reason,
       attemptCount,
-      timestamp: new Date(),
+      timestamp: DateTime.now().toJSDate(),
       ...extractRequestMetadata(ctx),
     }
 
@@ -69,7 +69,7 @@ export default class AuthEventService {
   static emitLogout(user: User | null, ctx: HttpContext, sessionId?: string) {
     const eventData: LogoutEventData = {
       user,
-      timestamp: new Date(),
+      timestamp: DateTime.now().toJSDate(),
       sessionId,
       ...extractRequestMetadata(ctx),
     }
@@ -91,7 +91,7 @@ export default class AuthEventService {
       method: 'password',
       source,
       emailVerified,
-      timestamp: new Date(),
+      timestamp: DateTime.now().toJSDate(),
       ...extractRequestMetadata(ctx),
     }
 
@@ -108,7 +108,7 @@ export default class AuthEventService {
   ) {
     const eventData: TokenRefreshedEventData = {
       user,
-      timestamp: new Date(),
+      timestamp: DateTime.now().toJSDate(),
       ...extractRequestMetadata(ctx),
       ...tokenIds,
     }
