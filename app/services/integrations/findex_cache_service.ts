@@ -68,6 +68,24 @@ export default class FindexCacheService {
   }
 
   /**
+   * Cache father name search results
+   */
+  async cacheFatherSearchData(
+    fatherName: string,
+    data: FindexMotherSearchResponse[]
+  ): Promise<void> {
+    const key = this.FATHER_SEARCH_KEY(fatherName)
+    const cacheData = {
+      data,
+      cached_at: DateTime.now().toISO(),
+      ttl: this.MOTHER_SEARCH_TTL,
+    }
+
+    await redis.setex(key, this.MOTHER_SEARCH_TTL, JSON.stringify(cacheData))
+    await this.incrementMetric('father_search_cached')
+  }
+
+  /**
    * Get cached mother search data
    */
   async getCachedMotherSearchData(
@@ -88,6 +106,29 @@ export default class FindexCacheService {
     } catch (error) {
       await redis.del(key)
       await this.incrementMetric('mother_search_cache_error')
+      return null
+    }
+  }
+
+  /**
+   * Get cached father search data
+   */
+  async getCachedFatherSearchData(fatherName: string): Promise<FindexMotherSearchResponse[] | null> {
+    const key = this.FATHER_SEARCH_KEY(fatherName)
+    const cached = await redis.get(key)
+
+    if (!cached) {
+      await this.incrementMetric('father_search_cache_miss')
+      return null
+    }
+
+    try {
+      const cacheData = JSON.parse(cached)
+      await this.incrementMetric('father_search_cache_hit')
+      return cacheData.data
+    } catch (error) {
+      await redis.del(key)
+      await this.incrementMetric('father_search_cache_error')
       return null
     }
   }
@@ -167,6 +208,15 @@ export default class FindexCacheService {
   }
 
   /**
+   * Invalidate father search cache
+   */
+  async invalidateFatherSearchCache(fatherName: string): Promise<void> {
+    const key = this.FATHER_SEARCH_KEY(fatherName)
+    await redis.del(key)
+    await this.incrementMetric('father_search_cache_invalidated')
+  }
+
+  /**
    * Get cache statistics
    */
   async getCacheStats(): Promise<{
@@ -176,6 +226,9 @@ export default class FindexCacheService {
     mother_search_hits: number
     mother_search_misses: number
     mother_search_cached: number
+    father_search_hits: number
+    father_search_misses: number
+    father_search_cached: number
     cache_errors: number
     processing_locks: number
     priority_queue_size: number
@@ -187,8 +240,12 @@ export default class FindexCacheService {
       this.getMetric('mother_search_cache_hit'),
       this.getMetric('mother_search_cache_miss'),
       this.getMetric('mother_search_cached'),
+      this.getMetric('father_search_cache_hit'),
+      this.getMetric('father_search_cache_miss'),
+      this.getMetric('father_search_cached'),
       this.getMetric('cpf_cache_error'),
       this.getMetric('mother_search_cache_error'),
+      this.getMetric('father_search_cache_error'),
     ])
 
     const processingKeys = await redis.keys(`${this.CACHE_PREFIX}:processing:*`)
@@ -201,7 +258,10 @@ export default class FindexCacheService {
       mother_search_hits: metrics[3],
       mother_search_misses: metrics[4],
       mother_search_cached: metrics[5],
-      cache_errors: metrics[6] + metrics[7],
+      father_search_hits: metrics[6],
+      father_search_misses: metrics[7],
+      father_search_cached: metrics[8],
+      cache_errors: metrics[9] + metrics[10] + metrics[11],
       processing_locks: processingKeys.length,
       priority_queue_size: priorityQueueSize,
     }
@@ -258,6 +318,7 @@ export default class FindexCacheService {
   async getCacheHitRate(): Promise<{
     cpf_hit_rate: number
     mother_search_hit_rate: number
+    father_search_hit_rate: number
     overall_hit_rate: number
   }> {
     const stats = await this.getCacheStats()
@@ -272,13 +333,19 @@ export default class FindexCacheService {
         ? (stats.mother_search_hits / (stats.mother_search_hits + stats.mother_search_misses)) * 100
         : 0
 
-    const totalHits = stats.cpf_cache_hits + stats.mother_search_hits
-    const totalRequests = totalHits + stats.cpf_cache_misses + stats.mother_search_misses
+    const fatherHitRate =
+      stats.father_search_hits + stats.father_search_misses > 0
+        ? (stats.father_search_hits / (stats.father_search_hits + stats.father_search_misses)) * 100
+        : 0
+
+    const totalHits = stats.cpf_cache_hits + stats.mother_search_hits + stats.father_search_hits
+    const totalRequests = totalHits + stats.cpf_cache_misses + stats.mother_search_misses + stats.father_search_misses
     const overallHitRate = totalRequests > 0 ? (totalHits / totalRequests) * 100 : 0
 
     return {
       cpf_hit_rate: Math.round(cpfHitRate * 100) / 100,
       mother_search_hit_rate: Math.round(motherHitRate * 100) / 100,
+      father_search_hit_rate: Math.round(fatherHitRate * 100) / 100,
       overall_hit_rate: Math.round(overallHitRate * 100) / 100,
     }
   }
@@ -320,6 +387,9 @@ export default class FindexCacheService {
 
   private readonly MOTHER_SEARCH_KEY = (motherName: string) =>
     `${this.CACHE_PREFIX}:mother:${this.hashMotherName(motherName)}`
+
+  private readonly FATHER_SEARCH_KEY = (fatherName: string) =>
+    `${this.CACHE_PREFIX}:father:${this.hashMotherName(fatherName)}`
 
   private readonly PROCESSING_KEY = (cpf: string) =>
     `${this.CACHE_PREFIX}:processing:${cpf.replace(/\D/g, '')}`

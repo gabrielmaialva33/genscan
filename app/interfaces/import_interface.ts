@@ -58,6 +58,17 @@ namespace IImport {
   }
 
   /**
+   * Import from parent name payload (mother or father)
+   */
+  export interface ImportFromParentPayload {
+    parent_name: string
+    family_tree_id: string
+    user_id: number
+    import_relatives?: boolean
+    merge_duplicates?: boolean
+  }
+
+  /**
    * Import result
    */
   export interface ImportResult {

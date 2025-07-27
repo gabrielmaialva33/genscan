@@ -23,7 +23,7 @@ export default class DataImport extends BaseModel {
   declare family_tree_id: string
 
   @column()
-  declare import_type: 'national_id' | 'mother_name' | 'manual' | 'csv'
+  declare import_type: 'national_id' | 'mother_name' | 'father_name' | 'manual' | 'csv'
 
   @column()
   declare search_value: string

@@ -257,6 +257,55 @@ export default class FindexClient {
   }
 
   /**
+   * Search people by father's name
+   */
+  async searchByFatherName(fatherName: string): Promise<FindexMotherSearchResponse[]> {
+    if (!fatherName || fatherName.trim().length < 3) {
+      throw new Error('Father name must have at least 3 characters')
+    }
+
+    const normalizedName = fatherName.trim().toUpperCase()
+
+    // Check cache first
+    const cachedData = await this.cacheService.getCachedFatherSearchData(normalizedName)
+    if (cachedData) {
+      logger.debug(`Cache hit for father name: ${normalizedName}`)
+      return cachedData
+    }
+
+    await this.applyRateLimit()
+
+    const result = await this.retryRequest(async () => {
+      try {
+        logger.debug(`Making API call for father name: ${normalizedName}`)
+        const response = await this.client.get('', {
+          params: {
+            token: findexConfig.tokens.parent,
+            pai: normalizedName,
+          },
+        })
+
+        if (!isFindexMotherSearchResponse(response.data)) {
+          throw new Error('Invalid response format from Findex API')
+        }
+
+        return response.data
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          this.handleError(error)
+        }
+        throw error
+      }
+    })
+
+    // Cache the result
+    await this.cacheService.cacheFatherSearchData(normalizedName, result)
+    logger.debug(`Successfully cached father search data: ${normalizedName}`)
+
+    return result
+  }
+
+  /**
    * Validate CPF format
    */
   static isValidCPF(cpf: string): boolean {
