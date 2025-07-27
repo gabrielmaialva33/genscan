@@ -88,6 +88,40 @@ export default class AssignDefaultPermissionsService {
               IPermission.Actions.LIST,
             ])
         })
+        .orWhere((query) => {
+          query
+            .where('resource', IPermission.Resources.FAMILY_TREES)
+            .whereIn('action', [
+              IPermission.Actions.CREATE,
+              IPermission.Actions.READ,
+              IPermission.Actions.UPDATE,
+              IPermission.Actions.DELETE,
+              IPermission.Actions.LIST,
+              IPermission.Actions.EXPORT,
+            ])
+        })
+        .orWhere((query) => {
+          query
+            .where('resource', IPermission.Resources.PEOPLE)
+            .whereIn('action', [
+              IPermission.Actions.CREATE,
+              IPermission.Actions.READ,
+              IPermission.Actions.UPDATE,
+              IPermission.Actions.DELETE,
+              IPermission.Actions.LIST,
+              IPermission.Actions.EXPORT,
+            ])
+        })
+        .orWhere((query) => {
+          query
+            .where('resource', IPermission.Resources.IMPORTS)
+            .whereIn('action', [
+              IPermission.Actions.CREATE,
+              IPermission.Actions.READ,
+              IPermission.Actions.LIST,
+              IPermission.Actions.IMPORT,
+            ])
+        })
         .select('id')
 
       await this.syncRolePermissionsService.handle(

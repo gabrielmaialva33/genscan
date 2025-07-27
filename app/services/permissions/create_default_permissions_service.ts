@@ -60,6 +60,28 @@ export default class CreateDefaultPermissionsService {
         IPermission.Actions.LIST,
         IPermission.Actions.EXPORT,
       ],
+      [IPermission.Resources.FAMILY_TREES]: [
+        IPermission.Actions.CREATE,
+        IPermission.Actions.READ,
+        IPermission.Actions.UPDATE,
+        IPermission.Actions.DELETE,
+        IPermission.Actions.LIST,
+        IPermission.Actions.EXPORT,
+      ],
+      [IPermission.Resources.PEOPLE]: [
+        IPermission.Actions.CREATE,
+        IPermission.Actions.READ,
+        IPermission.Actions.UPDATE,
+        IPermission.Actions.DELETE,
+        IPermission.Actions.LIST,
+        IPermission.Actions.EXPORT,
+      ],
+      [IPermission.Resources.IMPORTS]: [
+        IPermission.Actions.CREATE,
+        IPermission.Actions.READ,
+        IPermission.Actions.LIST,
+        IPermission.Actions.IMPORT,
+      ],
     }
 
     // Generate permissions based on resource and action combinations

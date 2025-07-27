@@ -21,6 +21,9 @@ export default class IndexSeeder extends BaseSeeder {
     logger.info('👤 Seeding users...')
     await this.seed(await import('#database/seeders/user_seeder'))
 
+    logger.info('🔐 Seeding permissions...')
+    await this.seed(await import('#database/seeders/permission_seeder'))
+
     logger.info('🌳 Seeding family trees...')
     await this.seed(await import('#database/seeders/family_tree_seeder'))
 
