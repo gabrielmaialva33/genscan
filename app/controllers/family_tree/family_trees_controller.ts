@@ -59,7 +59,7 @@ export default class FamilyTreesController {
     const user = auth.user!
     const createPayload = {
       ...payload,
-      created_by: user.id,
+      owner_id: user.id,
     }
 
     const service = await app.container.make(CreateFamilyTreeService)

@@ -37,12 +37,14 @@ namespace IFamilyTree {
   export interface CreatePayload {
     name: string
     description?: string | null
-    created_by: number
-    is_public?: boolean
+    owner_id: number
+    privacy?: 'private' | 'public' | 'family'
     settings?: {
-      default_view?: 'tree' | 'list' | 'timeline'
-      show_living_only?: boolean
       theme?: string
+      default_layout?: string
+      node_colors?: Record<string, string>
+      show_photos?: boolean
+      show_dates?: boolean
     } | null
   }
 
