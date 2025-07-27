@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import FindexClient from '#services/integrations/findex_client'
-import FindexMapperService from '#services/imports/findex_mapper_service'
+import FindexMapperService from '#services/genealogy/findex_mapper_service'
 import PeopleRepository from '#repositories/people_repository'
 import DataImportsRepository from '#repositories/data_imports_repository'
 import IImport from '#interfaces/import_interface'

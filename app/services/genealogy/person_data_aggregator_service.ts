@@ -1,11 +1,13 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
+import { DateTime } from 'luxon'
 import FindexClient from '#services/integrations/findex_client'
-import SiblingValidationService from '#services/imports/sibling_validation_service'
+import SiblingValidationService from '#services/genealogy/sibling_validation_service'
+import NameMatchingService from '#services/genealogy/name_matching_service'
 import { FindexPersonResponse } from '#interfaces/findex_interface'
 import IPerson from '#interfaces/person_interface'
 
-interface EnrichmentContext {
+interface AggregationContext {
   cpf?: string
   motherName?: string
   fatherName?: string
@@ -13,7 +15,7 @@ interface EnrichmentContext {
   birthDate?: string
 }
 
-interface EnrichedPersonData {
+interface AggregatedPersonData {
   person: Partial<IPerson.CreatePayload>
   relatives: Array<{
     cpf: string
@@ -33,23 +35,24 @@ interface EnrichedPersonData {
 }
 
 /**
- * Service to enrich person data by combining information from multiple API sources
+ * Service to aggregate person data by combining information from multiple API sources
  */
 @inject()
-export default class DataEnrichmentService {
+export default class PersonDataAggregatorService {
   private readonly MAX_SIBLINGS_PER_SEARCH = 10
 
   constructor(
     private findexClient: FindexClient,
-    private siblingValidation: SiblingValidationService
+    private siblingValidation: SiblingValidationService,
+    private nameMatching: NameMatchingService
   ) {}
 
   /**
-   * Enrich person data using all available sources
+   * Aggregate person data using all available sources
    */
-  async enrichPersonData(context: EnrichmentContext): Promise<EnrichedPersonData | null> {
+  async aggregatePersonData(context: AggregationContext): Promise<AggregatedPersonData | null> {
     const sourcesUsed: string[] = []
-    let enrichedData: EnrichedPersonData = {
+    let aggregatedData: AggregatedPersonData = {
       person: {},
       relatives: [],
       siblings: [],
@@ -63,69 +66,79 @@ export default class DataEnrichmentService {
     try {
       // First, try to get data by CPF if available
       if (context.cpf && context.cpf !== 'SEM INFORMAÇÃO') {
-        const cpfData = await this.enrichFromCPF(context.cpf)
+        const cpfData = await this.aggregateFromCPF(context.cpf)
         if (cpfData) {
-          enrichedData = this.mergePersonData(enrichedData, cpfData)
+          aggregatedData = this.mergePersonData(aggregatedData, cpfData)
           sourcesUsed.push('cpf_search')
         }
       }
 
       // Search for siblings using parent names (mother and/or father)
-      const motherName = enrichedData.person.mother_name || context.motherName
-      const fatherName = enrichedData.person.father_name || context.fatherName
+      const motherName = aggregatedData.person.mother_name || context.motherName
+      const fatherName = aggregatedData.person.father_name || context.fatherName
 
       if (
         (motherName && motherName !== 'SEM INFORMAÇÃO') ||
         (fatherName && fatherName !== 'SEM INFORMAÇÃO')
       ) {
-        const parentSearchData = await this.enrichFromParentSearches(
+        const parentSearchData = await this.aggregateFromParentSearches(
           {
             motherName,
             fatherName,
             cpf: context.cpf,
             birthDate: context.birthDate,
           },
-          enrichedData.person
+          aggregatedData.person
         )
 
         if (parentSearchData) {
-          enrichedData = this.mergePersonData(enrichedData, parentSearchData)
+          aggregatedData = this.mergePersonData(aggregatedData, parentSearchData)
           sourcesUsed.push('parent_search_validated')
         }
       }
 
       // If we still don't have enough data and have a name, try searching by mother name of known relatives
-      if (enrichedData.relatives.length === 0 && context.fullName) {
-        const expandedSearch = await this.expandSearchThroughRelatives(enrichedData)
+      if (aggregatedData.relatives.length === 0 && context.fullName) {
+        const expandedSearch = await this.expandSearchThroughRelatives(aggregatedData)
         if (expandedSearch) {
-          enrichedData = this.mergePersonData(enrichedData, expandedSearch)
+          aggregatedData = this.mergePersonData(aggregatedData, expandedSearch)
           sourcesUsed.push('expanded_search')
         }
       }
 
       // Update metadata
-      enrichedData.additionalInfo.sourcesUsed = sourcesUsed
-      enrichedData.additionalInfo.hasMultipleSources = sourcesUsed.length > 1
-      enrichedData.additionalInfo.dataQuality = this.assessDataQuality(enrichedData)
+      aggregatedData.additionalInfo.sourcesUsed = sourcesUsed
+      aggregatedData.additionalInfo.hasMultipleSources = sourcesUsed.length > 1
+      aggregatedData.additionalInfo.dataQuality = this.assessDataQuality(aggregatedData)
 
       logger.info(
-        `Enriched data for ${context.cpf || context.fullName}: ${sourcesUsed.length} sources used, ${enrichedData.relatives.length} relatives found, ${enrichedData.siblings.length} siblings found`
+        `Aggregated data for ${context.cpf || context.fullName}: ${sourcesUsed.length} sources used, ${aggregatedData.relatives.length} relatives found, ${aggregatedData.siblings.length} siblings found`
       )
 
-      return enrichedData
+      return aggregatedData
     } catch (error) {
-      logger.error('Failed to enrich person data', error)
+      logger.error('Failed to aggregate person data', error)
       return null
     }
   }
 
   /**
-   * Enrich data from CPF search
+   * Aggregate data from CPF search
    */
-  private async enrichFromCPF(cpf: string): Promise<EnrichedPersonData | null> {
+  private async aggregateFromCPF(cpf: string): Promise<AggregatedPersonData | null> {
     try {
       const cpfData = await this.findexClient.searchByCPF(cpf)
       if (!cpfData) return null
+
+      // Parse birth date
+      let birthDate: DateTime | null = null
+      if (cpfData.NASCIMENTO && cpfData.NASCIMENTO !== 'SEM INFORMAÇÃO') {
+        birthDate = DateTime.fromFormat(cpfData.NASCIMENTO, 'dd/MM/yyyy')
+        if (!birthDate.isValid) {
+          logger.warn(`Invalid birth date format for CPF ${cpf}: ${cpfData.NASCIMENTO}`)
+          birthDate = null
+        }
+      }
 
       return {
         person: {
@@ -134,6 +147,7 @@ export default class DataEnrichmentService {
           mother_name: this.normalizeValue(cpfData.NOME_MAE) || undefined,
           father_name: this.normalizeValue(cpfData.NOME_PAI) || undefined,
           gender: cpfData.SEXO as 'M' | 'F' | null,
+          birth_date: birthDate || undefined,
         },
         relatives: this.extractRelativesFromCPFData(cpfData),
         siblings: [], // Will be filled by mother search
@@ -144,28 +158,53 @@ export default class DataEnrichmentService {
         },
       }
     } catch (error) {
-      logger.error(`Failed to enrich from CPF ${cpf}`, error)
+      logger.error(`Failed to aggregate from CPF ${cpf}`, error)
       return null
     }
   }
 
   /**
-   * Enrich data from parent searches with sibling validation
+   * Aggregate data from parent searches with sibling validation
    */
-  private async enrichFromParentSearches(
-    context: EnrichmentContext,
+  private async aggregateFromParentSearches(
+    context: AggregationContext,
     knownPersonData?: Partial<IPerson.CreatePayload>
-  ): Promise<EnrichedPersonData | null> {
+  ): Promise<AggregatedPersonData | null> {
     try {
       const siblingCandidates = new Map<string, any>()
       const { motherName, fatherName, cpf: excludeCpf, birthDate } = context
+      let actualMotherName = motherName
+      let motherNameDiscoveredByFather = false
 
-      // Search by mother name
-      if (motherName && motherName !== 'SEM INFORMAÇÃO') {
-        logger.info(`Searching siblings by mother: ${motherName}`)
-        const motherResults = await this.findexClient.searchByMotherName(motherName)
+      // STRATEGY: Search by father first if available (more specific, fewer results)
+      if (fatherName && fatherName !== 'SEM INFORMAÇÃO') {
+        logger.info(`Starting with father search: ${fatherName}`)
+        const fatherResults = await this.findexClient.searchByFatherName(fatherName)
+        logger.info(`Found ${fatherResults.length} people with father: ${fatherName}`)
 
-        motherResults.forEach((person) => {
+        // Check if we find the person we're looking for to get the correct mother name
+        if (excludeCpf) {
+          const ourPerson = fatherResults.find((p) => p.CPF === excludeCpf)
+          if (ourPerson && ourPerson.MAE && ourPerson.MAE !== 'SEM INFORMAÇÃO') {
+            const discoveredMotherName = this.normalizeValue(ourPerson.MAE)
+
+            // If the mother name is different from what we have, use the discovered one
+            if (
+              discoveredMotherName &&
+              (!actualMotherName ||
+                !this.nameMatching.areNamesSimilar(actualMotherName, discoveredMotherName))
+            ) {
+              logger.info(
+                `Discovered different mother name via father search: "${discoveredMotherName}" (was: "${actualMotherName}")`
+              )
+              actualMotherName = discoveredMotherName
+              motherNameDiscoveredByFather = true
+            }
+          }
+        }
+
+        // Add all siblings found by father
+        fatherResults.forEach((person) => {
           if (person.CPF !== excludeCpf) {
             siblingCandidates.set(person.CPF, {
               cpf: person.CPF,
@@ -173,41 +212,43 @@ export default class DataEnrichmentService {
               birthDate: person.NASCIMENTO,
               motherName: this.normalizeValue(person.MAE),
               fatherName: this.normalizeValue(person.PAI),
-              foundByMother: true,
-              foundByFather: false,
+              foundByMother: false,
+              foundByFather: true,
               rawData: person,
             })
           }
         })
-        logger.info(`Found ${siblingCandidates.size} candidates by mother name`)
       }
 
-      // Search by father name
-      if (fatherName && fatherName !== 'SEM INFORMAÇÃO') {
-        logger.info(`Searching siblings by father: ${fatherName}`)
-        const fatherResults = await this.findexClient.searchByFatherName(fatherName)
+      // Search by mother name (using the discovered name if found)
+      if (actualMotherName && actualMotherName !== 'SEM INFORMAÇÃO') {
+        logger.info(
+          `Searching siblings by mother: ${actualMotherName}${motherNameDiscoveredByFather ? ' (discovered via father)' : ''}`
+        )
+        const motherResults = await this.findexClient.searchByMotherName(actualMotherName)
+        logger.info(`Found ${motherResults.length} people with mother: ${actualMotherName}`)
 
-        fatherResults.forEach((person) => {
+        motherResults.forEach((person) => {
           if (person.CPF !== excludeCpf) {
             if (siblingCandidates.has(person.CPF)) {
-              // Already found by mother, mark as found by both
-              siblingCandidates.get(person.CPF).foundByFather = true
+              // Already found by father, mark as found by both
+              siblingCandidates.get(person.CPF).foundByMother = true
             } else {
-              // New candidate found only by father
+              // New candidate found only by mother
               siblingCandidates.set(person.CPF, {
                 cpf: person.CPF,
                 name: this.normalizeValue(person.NOME) || '',
                 birthDate: person.NASCIMENTO,
                 motherName: this.normalizeValue(person.MAE),
                 fatherName: this.normalizeValue(person.PAI),
-                foundByMother: false,
-                foundByFather: true,
+                foundByMother: true,
+                foundByFather: false,
                 rawData: person,
               })
             }
           }
         })
-        logger.info(`Total candidates after father search: ${siblingCandidates.size}`)
+        logger.info(`Total candidates after mother search: ${siblingCandidates.size}`)
       }
 
       // Validate siblings
@@ -228,7 +269,7 @@ export default class DataEnrichmentService {
       const validatedSiblings = await this.siblingValidation.validateMultipleSiblings(
         knownPerson,
         candidates,
-        { motherName, fatherName }
+        { motherName: actualMotherName || motherName, fatherName }
       )
 
       // Log validation results
@@ -252,6 +293,16 @@ export default class DataEnrichmentService {
         ? candidates.find((c) => c.rawData?.CPF === excludeCpf)?.rawData
         : null
 
+      // Parse birth date if available
+      let personBirthDate: DateTime | null = null
+      if (personData?.NASCIMENTO && personData.NASCIMENTO !== 'SEM INFORMAÇÃO') {
+        personBirthDate = DateTime.fromFormat(personData.NASCIMENTO, 'dd/MM/yyyy')
+        if (!personBirthDate.isValid) {
+          logger.warn(`Invalid birth date format: ${personData.NASCIMENTO}`)
+          personBirthDate = null
+        }
+      }
+
       return {
         person: personData
           ? {
@@ -260,6 +311,7 @@ export default class DataEnrichmentService {
               mother_name: this.normalizeValue(personData.MAE || motherName) || undefined,
               father_name: this.normalizeValue(personData.PAI || fatherName) || undefined,
               gender: personData.SEXO as 'M' | 'F' | null,
+              birth_date: personBirthDate || undefined,
             }
           : {},
         relatives: [],
@@ -271,7 +323,7 @@ export default class DataEnrichmentService {
         },
       }
     } catch (error) {
-      logger.error('Failed to enrich from parent searches', error)
+      logger.error('Failed to aggregate from parent searches', error)
       return null
     }
   }
@@ -300,8 +352,8 @@ export default class DataEnrichmentService {
    * Expand search through relatives' connections
    */
   private async expandSearchThroughRelatives(
-    currentData: EnrichedPersonData
-  ): Promise<EnrichedPersonData | null> {
+    currentData: AggregatedPersonData
+  ): Promise<AggregatedPersonData | null> {
     try {
       const additionalRelatives: Array<{ cpf: string; name: string; relationship: string }> = []
       const processedCpfs = new Set<string>()
@@ -344,9 +396,9 @@ export default class DataEnrichmentService {
    * Merge person data from multiple sources
    */
   private mergePersonData(
-    existing: EnrichedPersonData,
-    newData: EnrichedPersonData
-  ): EnrichedPersonData {
+    existing: AggregatedPersonData,
+    newData: AggregatedPersonData
+  ): AggregatedPersonData {
     // Merge person data, preferring non-null values
     const mergedPerson = { ...existing.person }
     for (const [key, value] of Object.entries(newData.person)) {
@@ -380,9 +432,9 @@ export default class DataEnrichmentService {
   }
 
   /**
-   * Assess the quality of enriched data
+   * Assess the quality of aggregateed data
    */
-  private assessDataQuality(data: EnrichedPersonData): 'high' | 'medium' | 'low' {
+  private assessDataQuality(data: AggregatedPersonData): 'high' | 'medium' | 'low' {
     let score = 0
 
     // Check completeness of person data
@@ -431,6 +483,148 @@ export default class DataEnrichmentService {
   }
 
   /**
+   * Discover parents through children search (reverse lookup)
+   * This is useful when we have limited information about a person
+   * but they might be listed as parents in their children's records
+   */
+  async discoverParentsThroughChildren(
+    personName: string,
+    approximateBirthYear?: number
+  ): Promise<{
+    possibleChildren: Array<{
+      cpf: string
+      name: string
+      motherName: string | null
+      fatherName: string | null
+      birthDate?: string
+    }>
+    discoveredParentInfo: {
+      motherNameVariations: string[]
+      fatherNameVariations: string[]
+      spouseNames: string[]
+    }
+  }> {
+    try {
+      const normalizedName = this.normalizeValue(personName)
+      if (!normalizedName) {
+        return {
+          possibleChildren: [],
+          discoveredParentInfo: {
+            motherNameVariations: [],
+            fatherNameVariations: [],
+            spouseNames: [],
+          },
+        }
+      }
+
+      logger.info(`Starting reverse parent discovery for: ${normalizedName}`)
+
+      // Search as mother
+      const asMotherResults = await this.findexClient.searchByMotherName(normalizedName)
+
+      // Search as father
+      const asFatherResults = await this.findexClient.searchByFatherName(normalizedName)
+
+      const possibleChildren: Map<string, any> = new Map()
+      const motherNameVariations = new Set<string>()
+      const fatherNameVariations = new Set<string>()
+      const spouseNames = new Set<string>()
+
+      // Process results where person is listed as mother
+      asMotherResults.forEach((child) => {
+        // If we have an approximate birth year, filter out unlikely matches
+        if (approximateBirthYear && child.NASCIMENTO) {
+          const childBirthYear = Number.parseInt(child.NASCIMENTO.substring(0, 4))
+          const parentAge = childBirthYear - approximateBirthYear
+          // Parent should be at least 15 and at most 60 when child was born
+          if (parentAge < 15 || parentAge > 60) {
+            return
+          }
+        }
+
+        possibleChildren.set(child.CPF, {
+          cpf: child.CPF,
+          name: this.normalizeValue(child.NOME) || '',
+          motherName: this.normalizeValue(child.MAE),
+          fatherName: this.normalizeValue(child.PAI),
+          birthDate: child.NASCIMENTO,
+          parentRole: 'mother',
+        })
+
+        // Collect mother name variations
+        const motherName = this.normalizeValue(child.MAE)
+        if (motherName) motherNameVariations.add(motherName)
+
+        // Collect spouse (father) names
+        const fatherName = this.normalizeValue(child.PAI)
+        if (fatherName) spouseNames.add(fatherName)
+      })
+
+      // Process results where person is listed as father
+      asFatherResults.forEach((child) => {
+        // If we have an approximate birth year, filter out unlikely matches
+        if (approximateBirthYear && child.NASCIMENTO) {
+          const childBirthYear = Number.parseInt(child.NASCIMENTO.substring(0, 4))
+          const parentAge = childBirthYear - approximateBirthYear
+          if (parentAge < 15 || parentAge > 60) {
+            return
+          }
+        }
+
+        if (possibleChildren.has(child.CPF)) {
+          // Child found through both searches - high confidence
+          possibleChildren.get(child.CPF).parentRole = 'both'
+        } else {
+          possibleChildren.set(child.CPF, {
+            cpf: child.CPF,
+            name: this.normalizeValue(child.NOME) || '',
+            motherName: this.normalizeValue(child.MAE),
+            fatherName: this.normalizeValue(child.PAI),
+            birthDate: child.NASCIMENTO,
+            parentRole: 'father',
+          })
+        }
+
+        // Collect father name variations
+        const fatherName = this.normalizeValue(child.PAI)
+        if (fatherName) fatherNameVariations.add(fatherName)
+
+        // Collect spouse (mother) names
+        const motherName = this.normalizeValue(child.MAE)
+        if (motherName) spouseNames.add(motherName)
+      })
+
+      const childrenArray = Array.from(possibleChildren.values())
+
+      logger.info(
+        `Reverse parent discovery complete: found ${childrenArray.length} possible children`
+      )
+      logger.info(
+        `Discovered ${motherNameVariations.size} mother name variations, ${fatherNameVariations.size} father name variations`
+      )
+
+      return {
+        possibleChildren: childrenArray,
+        discoveredParentInfo: {
+          motherNameVariations: Array.from(motherNameVariations),
+          fatherNameVariations: Array.from(fatherNameVariations),
+          spouseNames: Array.from(spouseNames),
+        },
+      }
+    } catch (error) {
+      logger.error('Failed to discover parents through children', error)
+      return {
+        possibleChildren: [],
+        discoveredParentInfo: {
+          motherNameVariations: [],
+          fatherNameVariations: [],
+          spouseNames: [],
+        },
+      }
+    }
+  }
+
+  /**
    * Discover family connections through iterative searches
    */
   async discoverFamilyConnections(
@@ -447,14 +641,14 @@ export default class DataEnrichmentService {
 
       processed.add(cpf)
 
-      const enrichedData = await this.enrichPersonData({ cpf })
-      if (!enrichedData) continue
+      const aggregatedData = await this.aggregatePersonData({ cpf })
+      if (!aggregatedData) continue
 
       // Add connections
       const cpfConnections = connections.get(cpf) || new Set<string>()
 
       // Add relatives
-      for (const relative of enrichedData.relatives) {
+      for (const relative of aggregatedData.relatives) {
         cpfConnections.add(relative.cpf)
         if (!processed.has(relative.cpf)) {
           queue.push({ cpf: relative.cpf, depth: depth + 1 })
@@ -462,7 +656,7 @@ export default class DataEnrichmentService {
       }
 
       // Add siblings
-      for (const sibling of enrichedData.siblings) {
+      for (const sibling of aggregatedData.siblings) {
         cpfConnections.add(sibling.cpf)
         if (!processed.has(sibling.cpf)) {
           queue.push({ cpf: sibling.cpf, depth: depth + 1 })

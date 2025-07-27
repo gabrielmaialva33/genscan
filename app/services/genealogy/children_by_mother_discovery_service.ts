@@ -1,8 +1,8 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import FindexClient from '#services/integrations/findex_client'
-import FindexMapperService from '#services/imports/findex_mapper_service'
-import ImportFromCPFService from '#services/imports/import_from_cpf_service'
+import FindexMapperService from '#services/genealogy/findex_mapper_service'
+import PersonDiscoveryByCpfService from '#services/genealogy/person_discovery_by_cpf_service'
 import PeopleRepository from '#repositories/people_repository'
 import RelationshipsRepository from '#repositories/relationships_repository'
 import DataImportsRepository from '#repositories/data_imports_repository'
@@ -16,7 +16,7 @@ export default class ImportFromMotherService {
   constructor(
     private findexClient: FindexClient,
     private findexMapper: FindexMapperService,
-    private importFromCPFService: ImportFromCPFService,
+    private personDiscoveryByCpfService: PersonDiscoveryByCpfService,
     private peopleRepository: PeopleRepository,
     private relationshipsRepository: RelationshipsRepository,
     private importsRepository: DataImportsRepository
@@ -129,7 +129,7 @@ export default class ImportFromMotherService {
           // If import_relatives is true, fetch full data for each child
           if (importRelatives) {
             try {
-              const fullImportResult = await this.importFromCPFService.run({
+              const fullImportResult = await this.personDiscoveryByCpfService.run({
                 cpf: childData.CPF,
                 family_tree_id: familyTreeId,
                 user_id: userId,

@@ -4,7 +4,7 @@ import app from '@adonisjs/core/services/app'
 
 import ImportPersonFromCPFService from '#services/people/import_person_from_cpf_service'
 import ImportPeopleFromMotherService from '#services/people/import_people_from_mother_service'
-import QueueFullTreeImportService from '#services/imports/queue_full_tree_import_service'
+import FamilyTreeQueueService from '#services/genealogy/family_tree_queue_service'
 import DataImportsRepository from '#repositories/data_imports_repository'
 
 import { importFromCpfValidator, importFromMotherValidator } from '#validations/import_validator'
@@ -51,7 +51,7 @@ export default class ImportController {
       user_id: user.id,
     }
 
-    const service = await app.container.make(QueueFullTreeImportService)
+    const service = await app.container.make(FamilyTreeQueueService)
     const result = await service.run(importPayload)
 
     return response.status(202).json(result) // 202 Accepted for async processing

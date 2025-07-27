@@ -1,10 +1,10 @@
 import { Job } from '@rlanz/bull-queue'
 import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
-import ImportFullTreeService from '#services/imports/import_full_tree_service'
+import FamilyTreeDiscoveryService from '#services/genealogy/family_tree_discovery_service'
 import DataImportsRepository from '#repositories/data_imports_repository'
 
-interface ImportFullTreeJobPayload {
+interface FamilyTreeDiscoveryJobPayload {
   cpf: string
   family_tree_id: string
   user_id: number
@@ -14,7 +14,7 @@ interface ImportFullTreeJobPayload {
   import_id?: string
 }
 
-export default class ImportFullTreeJob extends Job {
+export default class FamilyTreeDiscoveryJob extends Job {
   // This is the path to the file that is used to create the job
   static get $$filepath() {
     return import.meta.url
@@ -23,15 +23,15 @@ export default class ImportFullTreeJob extends Job {
   /**
    * Base Entry point
    */
-  async handle(payload: ImportFullTreeJobPayload): Promise<void> {
-    logger.info(`Starting ImportFullTreeJob for CPF ${payload.cpf}`)
+  async handle(payload: FamilyTreeDiscoveryJobPayload): Promise<void> {
+    logger.info(`Starting FamilyTreeDiscoveryJob for CPF ${payload.cpf}`)
 
     try {
       // Get the service instance
-      const importFullTreeService = await app.container.make(ImportFullTreeService)
+      const familyTreeDiscoveryService = await app.container.make(FamilyTreeDiscoveryService)
 
       // Run the import
-      const result = await importFullTreeService.run({
+      const result = await familyTreeDiscoveryService.run({
         cpf: payload.cpf,
         family_tree_id: payload.family_tree_id,
         user_id: payload.user_id,
@@ -56,8 +56,8 @@ export default class ImportFullTreeJob extends Job {
   /**
    * This is an optional method that gets called when the retries has exceeded and is marked failed.
    */
-  async rescue(payload: ImportFullTreeJobPayload, error: Error) {
-    logger.error(`ImportFullTreeJob failed after all retries for CPF ${payload.cpf}`, error)
+  async rescue(payload: FamilyTreeDiscoveryJobPayload, error: Error) {
+    logger.error(`FamilyTreeDiscoveryJob failed after all retries for CPF ${payload.cpf}`, error)
 
     // Update import status to failed if we have an import_id
     if (payload.import_id) {

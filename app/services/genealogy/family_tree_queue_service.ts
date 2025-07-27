@@ -2,9 +2,9 @@ import { inject } from '@adonisjs/core'
 import queue from '@rlanz/bull-queue/services/main'
 import logger from '@adonisjs/core/services/logger'
 import DataImportsRepository from '#repositories/data_imports_repository'
-import ImportFullTreeJob from '#jobs/import_full_tree_job'
+import FamilyTreeDiscoveryJob from '#jobs/family_tree_discovery_job'
 
-interface QueueFullTreeImportPayload {
+interface FamilyTreeQueuePayload {
   cpf: string
   family_tree_id: string
   user_id: number
@@ -13,21 +13,21 @@ interface QueueFullTreeImportPayload {
   merge_duplicates?: boolean
 }
 
-interface QueueFullTreeImportResult {
+interface FamilyTreeQueueResult {
   import_id: string
   status: 'queued'
   message: string
 }
 
 /**
- * Service to queue a full tree import job
+ * Service to queue a family tree discovery job
  * Creates import record and dispatches job to queue
  */
 @inject()
-export default class QueueFullTreeImportService {
+export default class FamilyTreeQueueService {
   constructor(private importsRepository: DataImportsRepository) {}
 
-  async run(payload: QueueFullTreeImportPayload): Promise<QueueFullTreeImportResult> {
+  async run(payload: FamilyTreeQueuePayload): Promise<FamilyTreeQueueResult> {
     const {
       cpf,
       family_tree_id: familyTreeId,
@@ -37,7 +37,7 @@ export default class QueueFullTreeImportService {
       merge_duplicates: mergeDuplicates = true,
     } = payload
 
-    logger.info(`Queueing full tree import for CPF ${cpf}`)
+    logger.info(`Queueing family tree discovery for CPF ${cpf}`)
 
     // Create import record
     const dataImport = await this.importsRepository.createImport(
@@ -57,7 +57,7 @@ export default class QueueFullTreeImportService {
 
     // Dispatch job to queue
     await queue.dispatch(
-      ImportFullTreeJob,
+      FamilyTreeDiscoveryJob,
       {
         cpf,
         family_tree_id: familyTreeId,

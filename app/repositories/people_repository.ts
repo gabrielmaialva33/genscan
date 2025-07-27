@@ -1,4 +1,5 @@
 import { inject } from '@adonisjs/core'
+import logger from '@adonisjs/core/services/logger'
 import { DateTime } from 'luxon'
 import Person from '#models/person'
 import PersonDetail from '#models/person_detail'
@@ -11,6 +12,43 @@ export default class PeopleRepository
   implements IPerson.Repository
 {
   protected model = Person
+
+  /**
+   * Override create to handle birth_date properly
+   */
+  async create(data: IPerson.CreatePayload): Promise<Person> {
+    // Log the incoming data
+    logger.debug('PeopleRepository.create called with:', {
+      ...data,
+      birth_date: data.birth_date
+        ? {
+            value: data.birth_date.toString(),
+            type: typeof data.birth_date,
+            isDateTime: data.birth_date instanceof DateTime,
+          }
+        : null,
+    })
+
+    // Ensure birth_date is handled properly
+    const createData: any = { ...data }
+
+    // If birth_date is a DateTime object, we let Lucid handle it
+    // If it's a string, convert to DateTime first
+    if (data.birth_date && !(data.birth_date instanceof DateTime)) {
+      createData.birth_date = DateTime.fromISO(data.birth_date as any)
+    }
+
+    const person = await this.model.create(createData)
+
+    logger.debug('PeopleRepository.create result:', {
+      id: person.id,
+      full_name: person.full_name,
+      birth_date: person.birth_date ? person.birth_date.toString() : null,
+      birth_date_sql: person.birth_date ? person.birth_date.toSQLDate() : null,
+    })
+
+    return person
+  }
 
   /**
    * Find person by national ID (CPF)

@@ -2,9 +2,9 @@ import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import FindexClient from '#services/integrations/findex_client'
 import FindexCacheService from '#services/integrations/findex_cache_service'
-import FindexMapperService from '#services/imports/findex_mapper_service'
-import RelationshipInferenceService from '#services/imports/relationship_inference_service'
-import DataEnrichmentService from '#services/imports/data_enrichment_service'
+import FindexMapperService from '#services/genealogy/findex_mapper_service'
+import RelationshipInferenceService from '#services/genealogy/relationship_inference_service'
+import PersonDataAggregatorService from '#services/genealogy/person_data_aggregator_service'
 import PeopleRepository from '#repositories/people_repository'
 import PersonDetail from '#models/person_detail'
 import RelationshipsRepository from '#repositories/relationships_repository'
@@ -23,7 +23,7 @@ interface TreeNode {
   source?: 'cpf_search' | 'mother_search' | 'relative'
 }
 
-interface ImportFullTreePayload {
+interface FamilyTreeDiscoveryPayload {
   cpf: string
   family_tree_id: string
   user_id: number
@@ -32,17 +32,17 @@ interface ImportFullTreePayload {
   merge_duplicates?: boolean
 }
 
-interface ImportFullTreeResult extends IImport.ImportResult {
+interface FamilyTreeDiscoveryResult extends IImport.ImportResult {
   total_levels: number
   tree_structure: TreeNode[]
 }
 
 /**
- * Service to import full genealogy tree from a starting CPF
+ * Service to discover and explore full genealogy tree from a starting CPF
  * Uses BFS (Breadth-First Search) to explore the tree level by level
  */
 @inject()
-export default class ImportFullTreeService {
+export default class FamilyTreeDiscoveryService {
   private readonly DEFAULT_MAX_DEPTH = 3
   private readonly DEFAULT_MAX_PEOPLE = 500
   private readonly BATCH_SIZE = 10 // Process in batches to avoid overwhelming the API
@@ -52,16 +52,16 @@ export default class ImportFullTreeService {
     private cacheService: FindexCacheService,
     private findexMapper: FindexMapperService,
     private relationshipInference: RelationshipInferenceService,
-    private dataEnrichment: DataEnrichmentService,
+    private personDataAggregator: PersonDataAggregatorService,
     private peopleRepository: PeopleRepository,
     private relationshipsRepository: RelationshipsRepository,
     private importsRepository: DataImportsRepository
   ) {}
 
   /**
-   * Import full genealogy tree starting from a CPF
+   * Discover full genealogy tree starting from a CPF
    */
-  async run(payload: ImportFullTreePayload): Promise<ImportFullTreeResult> {
+  async run(payload: FamilyTreeDiscoveryPayload): Promise<FamilyTreeDiscoveryResult> {
     const {
       cpf,
       family_tree_id: familyTreeId,
@@ -71,7 +71,7 @@ export default class ImportFullTreeService {
       merge_duplicates: mergeDuplicates = true,
     } = payload
 
-    logger.info(`Starting full tree import from CPF ${cpf} with max depth ${maxDepth}`)
+    logger.info(`Starting full tree discovery from CPF ${cpf} with max depth ${maxDepth}`)
 
     // Create import record
     const dataImport = await this.importsRepository.createImport(
@@ -90,8 +90,8 @@ export default class ImportFullTreeService {
       const treeStructure: TreeNode[] = []
       const cpfToPersonId = new Map<string, string>()
 
-      // Track import progress
-      const progress: ImportFullTreeResult = {
+      // Track discovery progress
+      const progress: FamilyTreeDiscoveryResult = {
         import_id: dataImport.id,
         status: 'success',
         persons_created: 0,
@@ -302,7 +302,7 @@ export default class ImportFullTreeService {
    */
   private async processPerson(
     node: TreeNode,
-    familyTreeId: string,
+    _familyTreeId: string,
     userId: number,
     mergeDuplicates: boolean,
     processedCPFs: Set<string>,
@@ -328,7 +328,7 @@ export default class ImportFullTreeService {
       }
 
       // Use data enrichment service to get comprehensive data
-      const enrichedData = await this.dataEnrichment.enrichPersonData({
+      const enrichedData = await this.personDataAggregator.aggregatePersonData({
         cpf: node.cpf,
         fullName: node.name,
       })
@@ -366,14 +366,26 @@ export default class ImportFullTreeService {
         }
 
         if (!person) {
+          logger.debug(`Creating new person with data:`, {
+            ...personData,
+            birth_date: personData.birth_date?.toISODate() || null,
+          })
           person = await this.peopleRepository.create(personData)
           isNew = true
-          logger.info(`Created new person: ${person.id} (${personData.full_name})`)
+          logger.info(
+            `Created new person: ${person.id} (${personData.full_name}) with birth_date: ${person.birth_date}`
+          )
         }
       } else {
         // Update existing with enriched data
+        logger.debug(`Updating existing person ${person.id} with data:`, {
+          ...personData,
+          birth_date: personData.birth_date?.toISODate() || null,
+        })
         await person.merge(personData).save()
-        logger.info(`Updated existing person: ${person.id} with enriched data`)
+        logger.info(
+          `Updated existing person: ${person.id} with enriched data, birth_date: ${person.birth_date}`
+        )
       }
 
       // Create or update details if we have CPF data
@@ -444,7 +456,7 @@ export default class ImportFullTreeService {
     personId1: string,
     personId2: string,
     familyTreeId: string,
-    progress: ImportFullTreeResult,
+    progress: FamilyTreeDiscoveryResult,
     relationshipType?:
       | 'parent'
       | 'child'

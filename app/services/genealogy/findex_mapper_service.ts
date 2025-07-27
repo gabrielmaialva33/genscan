@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
+import logger from '@adonisjs/core/services/logger'
 import {
   FindexPersonResponse,
   FindexMotherSearchResponse,
@@ -22,11 +23,16 @@ export default class FindexMapperService {
     if (data.NASCIMENTO && data.NASCIMENTO !== 'SEM INFORMAÇÃO') {
       birthDate = DateTime.fromFormat(data.NASCIMENTO, 'dd/MM/yyyy')
       if (!birthDate.isValid) {
+        logger.warn(`Invalid birth date format for CPF ${data.CPF}: ${data.NASCIMENTO}`)
         birthDate = null
+      } else {
+        logger.debug(
+          `Parsed birth date for ${data.CPF}: ${birthDate.toISODate()} from ${data.NASCIMENTO}`
+        )
       }
     }
 
-    return {
+    const payload = {
       full_name: this.normalizeName(data.NOME) || '',
       national_id: data.CPF,
       birth_date: birthDate,
@@ -34,6 +40,13 @@ export default class FindexMapperService {
       mother_name: this.normalizeName(data.NOME_MAE),
       father_name: this.normalizeName(data.NOME_PAI),
     }
+
+    logger.debug(`Mapped person payload for ${data.CPF}:`, {
+      ...payload,
+      birth_date: payload.birth_date?.toISODate() || null,
+    })
+
+    return payload
   }
 
   /**
@@ -166,7 +179,7 @@ export default class FindexMapperService {
       default:
         // Log unexpected gender values for debugging
         if (upperSexo && upperSexo !== 'null') {
-          console.warn(`Unexpected gender value from API: '${sexo}', mapping to 'O'`)
+          logger.warn(`Unexpected gender value from API: '${sexo}', returning null`)
         }
         // Return null for empty/invalid values to maintain data integrity
         return null

@@ -1,12 +1,12 @@
 import { inject } from '@adonisjs/core'
-import ImportFromCPFService from '#services/imports/import_from_cpf_service'
+import PersonDiscoveryByCpfService from '#services/genealogy/person_discovery_by_cpf_service'
 import IImport from '#interfaces/import_interface'
 
 @inject()
 export default class ImportPersonFromCPFService {
-  constructor(private importFromCPFService: ImportFromCPFService) {}
+  constructor(private personDiscoveryByCpfService: PersonDiscoveryByCpfService) {}
 
   async run(payload: IImport.ImportFromCPFPayload) {
-    return this.importFromCPFService.run(payload)
+    return this.personDiscoveryByCpfService.run(payload)
   }
 }
