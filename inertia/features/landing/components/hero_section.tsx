@@ -50,7 +50,7 @@ export function HeroSection() {
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="btn-gradient-heritage text-parchment border-0 px-8 py-6 text-lg group font-semibold relative z-10"
+                  className="btn-gradient-heritage text-white border-0 px-8 py-6 text-lg group font-semibold relative z-10"
                 >
                   <Dna className="w-5 h-5 mr-2 animate-dna relative z-10" />
                   <span className="relative z-10">Comece Agora, é Grátis</span>

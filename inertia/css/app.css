@@ -452,6 +452,7 @@
   /* Button gradient hover effect */
   .btn-gradient-heritage {
     background: var(--gradient-heritage);
+    color: white;
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
