@@ -24,8 +24,10 @@ This ensures proper file structure, naming conventions, and boilerplate code.
 
 ### Testing
 
-- `pnpm test` - Run unit tests only
-- `pnpm run test:e2e` - Run all tests (functional and e2e)
+- `pnpm test` - Run unit tests only (2s timeout)
+- `pnpm run test:e2e` - Run all tests (functional and e2e, 30s timeout)
+- `pnpm run test:ui` - Run UI tests with Vitest
+- `pnpm run test:ui:watch` - Run UI tests in watch mode
 
 ### Code Quality
 
@@ -39,112 +41,146 @@ This ensures proper file structure, naming conventions, and boilerplate code.
 - `node ace migration:run` - Run pending migrations
 - `node ace db:seed` - Run database seeders
 - `node ace migration:rollback` - Rollback last migration
+- `node ace migration:fresh` - Drop all tables and re-migrate
+- `node ace migration:refresh` - Rollback and re-run all migrations
+- `node ace migration:status` - Check migration status
 
 ### Docker
 
 - `pnpm run docker` - Run migrations, seeders, and start server
 
-## Architecture Overview
+### Queue Management (Bull Queue)
 
-This is an AdonisJS v6 application with React frontend using Inertia.js. The project follows a modular structure with
-clear separation of concerns.
+- Check queue status and jobs via Redis integration
+- Family tree discovery jobs are processed asynchronously
+
+## Project Overview: Genscan - Family Tree Builder
+
+Genscan is a modern genealogy platform that integrates with Brazilian genealogy APIs (Findexbuscas) to automatically discover and build family trees. Built with AdonisJS v6 backend and React 19 frontend using Inertia.js.
 
 ### Key Technologies
 
 - **Backend**: AdonisJS v6 (Node.js framework)
 - **Frontend**: React 19 with Inertia.js for SPA-like experience
 - **Database**: PostgreSQL (production), SQLite (testing)
+- **Cache**: Redis (API responses, permissions, queue)
+- **Queue**: Bull Queue for async processing
 - **Styling**: TailwindCSS v4
+- **Visualization**: D3.js with family-chart library
 - **Authentication**: Multiple guards - JWT (default), API tokens, session, basic auth
 - **Validation**: VineJS
-- **Testing**: Japa framework
-- **Queue**: Bull Queue with Redis
+- **Testing**: Japa framework with MSW for mocking
+- **External APIs**: Findexbuscas (Brazilian genealogy data)
+
+### Unique Features
+
+#### Genealogy Domain
+
+1. **Family Tree Discovery**
+   - Import entire family trees using Brazilian CPF
+   - Import family members by mother's name
+   - Automatic relationship detection and inference
+   - Smart duplicate detection and merging
+   - Multi-level depth control (up to 5 levels)
+   - Batch processing with queue system
+
+2. **Data Enrichment Services** (`app/services/genealogy/`)
+   - `cpf_discovery_service.ts` - Find people by CPF
+   - `children_by_mother_discovery_service.ts` - Find children by mother's name
+   - `children_by_father_discovery_service.ts` - Find children by father's name
+   - `relationship_inference_service.ts` - Infer missing relationships
+   - `sibling_validation_service.ts` - Validate sibling relationships
+   - `name_matching_service.ts` - Fuzzy name matching
+   - `person_data_aggregator_service.ts` - Merge data from multiple sources
+   - `date_validation_service.ts` - Validate and parse Brazilian date formats
+
+3. **External API Integration** (`app/services/integrations/`)
+   - Findexbuscas API client with rate limiting
+   - Response caching to minimize API calls
+   - Automatic retry with exponential backoff
+   - Data mapping and normalization
+
+4. **Visualization**
+   - Interactive family tree charts using D3.js
+   - Multiple layout options
+   - Zoom, pan, and navigation features
+   - Export capabilities
 
 ### Project Structure
 
 #### Backend Architecture (`app/`)
 
-- **controllers/**: HTTP request handlers organized by domain (user, role, permission, file, health)
-- **models/**: Lucid ORM models with relationships and hooks
-- **services/**: Business logic layer organized by domain with specific use cases
-- **repositories/**: Data access layer abstraction
-- **middleware/**: HTTP middleware for auth, ACL, ownership checks
+- **controllers/**: HTTP request handlers organized by domain
+  - `family_tree/` - Family tree management and chart data
+  - `person/` - Person CRUD and import operations
+  - `inertia/` - Inertia.js page controllers
+- **models/**: Lucid ORM models with UUID primary keys
+  - `person.ts` - Core person entity
+  - `person_detail.ts` - Additional person information
+  - `relationship.ts` - Family relationships
+  - `family_tree.ts` - Family tree containers
+  - `family_tree_member.ts` - Tree membership
+  - `data_import.ts` - Import tracking
+- **services/**: Business logic layer
+  - `genealogy/` - Core genealogy algorithms
+  - `family_trees/` - Tree management
+  - `people/` - Person operations
+  - `integrations/` - External API clients
+- **jobs/**: Background jobs
+  - `family_tree_discovery_job.ts` - Async family import
+- **repositories/**: Data access layer
+- **middleware/**: HTTP middleware for auth, ACL, ownership
 - **validators/**: Request validation schemas
-- **events/**: Domain events and listeners
-- **exceptions/**: Custom exception classes
+- **serializers/**: Data transformation for API responses
 
 #### Frontend (`inertia/`)
 
-- **app/**: React application entry points
 - **pages/**: React page components
-- **css/**: Stylesheets
+- **components/**: Reusable UI components
+  - `charts/` - Data visualization components
+  - `effects/` - Visual effects (DNA particles, magnetic buttons)
+  - `landing/` - Landing page sections
+- **hooks/**: Custom React hooks
+- **services/**: API client services
 
 #### Configuration (`config/`)
 
-- **auth.ts**: Multi-guard authentication (JWT default, API tokens, session, basic auth)
+- **findex.ts**: Findexbuscas API configuration
+- **auth.ts**: Multi-guard authentication
 - **database.ts**: PostgreSQL/SQLite configuration
-- **drive.ts**: File storage (local, S3, GCS)
+- **queue.ts**: Bull Queue configuration
+- **redis.ts**: Redis caching configuration
 
 ### Authentication & Authorization
 
-The application uses a comprehensive RBAC (Role-Based Access Control) system:
-
 - **Multiple Auth Guards**: JWT (default), API tokens, session, basic auth
-- **Role-Permission System**: Users have roles, roles have permissions, users can have direct permissions
-- **Permission Inheritance**: Roles can inherit permissions from other roles
-- **Permission Caching**: Optimized permission checking with caching
-- **Ownership-based Access**: Middleware for resource ownership validation
-
-### Key Features
-
-- **User Management**: CRUD operations with email verification
-- **Role Management**: Dynamic role creation and permission assignment
-- **File Upload**: Multi-provider file storage (local, S3, GCS)
-- **Audit Logging**: Track user actions and changes
-- **Rate Limiting**: API throttling
-- **Internationalization**: Multi-language support (en/pt)
-- **Health Checks**: System health monitoring
+- **RBAC System**: Roles and permissions with inheritance
+- **Permission Caching**: Redis-based caching for performance
+- **Ownership Validation**: Resource-level access control
 
 ### Import Aliases
-
-The project uses extensive import aliases defined in `package.json`:
 
 - `#controllers/*` → `./app/controllers/*.js`
 - `#models/*` → `./app/models/*.js`
 - `#services/*` → `./app/services/*.js`
 - `#repositories/*` → `./app/repositories/*.js`
-- `#middleware/*` → `./app/middleware/*.js`
-- `#validators/*` → `./app/validators/*.js`
-- `#config/*` → `./config/*.js`
-- And many more...
+- `#jobs/*` → `./app/jobs/*.js`
+- `#serializers/*` → `./app/serializers/*.js`
+- And all standard aliases...
 
-### Database
+### Database Schema
 
-- **ORM**: Lucid with snake_case naming strategy
-- **Migrations**: Located in `database/migrations/`
-- **Soft Deletes**: Implemented in User model
-- **Relationships**: Extensive use of many-to-many relationships for RBAC
+- **UUID Primary Keys**: All tables use UUIDs
+- **Soft Deletes**: User model supports soft deletion
+- **Audit Logging**: Track all data changes
+- **Relationships**: Complex many-to-many for family relationships
 
-### Testing
+### Testing Strategy
 
-Two test suites configured in `adonisrc.ts`:
-
-- **Unit tests**: `tests/unit/**/*.spec.ts` (2s timeout)
-- **Functional tests**: `tests/functional/**/*.spec.ts` (30s timeout)
-
-Uses Japa testing framework with API client and OpenAPI assertion support.
-
-### File Organization
-
-Services are organized by domain with specific use cases:
-
-- `app/services/users/` - User-related operations
-- `app/services/permissions/` - Permission management
-- `app/services/roles/` - Role management
-- `app/services/audits/` - Audit logging
-- `app/services/upload/` - File upload handling
-
-This structure promotes maintainability and clear separation of business logic.
+- **Unit tests**: Service and utility testing
+- **Functional tests**: API endpoint testing
+- **UI tests**: React component testing with Vitest
+- **Mocking**: MSW for external API mocking
 
 ## AdonisJS Commands Reference (MUST USE)
 
@@ -186,8 +222,18 @@ node ace make:migration add_email_to_users --alter
 node ace make:service users/CreateUser
 # Creates: app/services/users/create_user.ts
 
-node ace make:service auth/VerifyEmail
-# Creates: app/services/auth/verify_email.ts
+node ace make:service genealogy/DiscoverFamily
+# Creates: app/services/genealogy/discover_family.ts
+```
+
+#### Jobs (for Queue)
+
+```bash
+node ace make:job ProcessImport
+# Creates: app/jobs/process_import.ts
+
+node ace make:job genealogy/DiscoverRelatives
+# Creates: app/jobs/genealogy/discover_relatives.ts
 ```
 
 #### Middleware
@@ -206,8 +252,8 @@ node ace make:middleware RateLimit --stack=router
 node ace make:validator CreateUser
 # Creates: app/validators/create_user.ts
 
-node ace make:validator users/UpdateProfile
-# Creates: app/validators/users/update_profile.ts
+node ace make:validator imports/ImportFullTree
+# Creates: app/validators/imports/import_full_tree.ts
 ```
 
 #### Tests
@@ -216,8 +262,8 @@ node ace make:validator users/UpdateProfile
 node ace make:test UserController --suite=functional
 # Creates: tests/functional/user_controller.spec.ts
 
-node ace make:test UserService --suite=unit
-# Creates: tests/unit/user_service.spec.ts
+node ace make:test genealogy/NameMatching --suite=unit
+# Creates: tests/unit/genealogy/name_matching.spec.ts
 ```
 
 #### Other Resources
@@ -244,11 +290,8 @@ node ace make:exception ValidationException
 node ace make:provider AppProvider
 # Creates: providers/app_provider.ts
 
-node ace make:command SendEmails
-# Creates: commands/send_emails.ts
-
-node ace make:job ProcessPayment
-# Creates: app/jobs/process_payment.ts
+node ace make:command SyncPermissions
+# Creates: commands/sync_permissions.ts
 
 node ace make:preload redis
 # Creates: start/redis.ts
@@ -282,6 +325,34 @@ node ace migration:status
 node ace migration:rollback --batch=2
 ```
 
+### Database Seeding
+
+```bash
+# Run all seeders
+node ace db:seed
+
+# Run specific seeder
+node ace db:seed --files=database/seeders/user_seeder.ts
+
+# Run main seeder (includes all)
+node ace db:seed --files=database/seeders/main/index_seeder.ts
+```
+
+### Queue Management
+
+```bash
+# Process queue jobs (handled by Bull Queue)
+# Jobs are automatically processed when queue worker is running
+# Check config/queue.ts for configuration
+```
+
+### Custom Commands
+
+```bash
+# Sync permissions (custom command)
+node ace sync:permissions
+```
+
 ### Package Management
 
 ```bash
@@ -306,32 +377,31 @@ node ace repl
 #### Import Models and Services
 
 ```javascript
-// Import default export
+// Import models
 const User = await importDefault('#models/user')
-
-// Alternative import syntax
-const { default: User } = await import('#models/user')
+const Person = await importDefault('#models/person')
+const FamilyTree = await importDefault('#models/family_tree')
 
 // Import services
-const UserService = await importDefault('#services/users/create_user')
+const FindexClient = await importDefault('#services/integrations/findex_client')
+const PersonDiscoveryService = await importDefault(
+  '#services/genealogy/person_discovery_by_cpf_service'
+)
 ```
 
-#### Working with Models
+#### Working with Genealogy Data
 
 ```javascript
-// Query users
-const users = await User.all()
-const user = await User.find(1)
+// Find person by CPF
+const person = await Person.query().where('cpf', '12345678901').first()
 
-// Create user
-const newUser = await User.create({
-  email: 'test@example.com',
-  password: 'secret',
-})
+// Get family tree members
+const tree = await FamilyTree.find('uuid-here')
+const members = await tree.related('members').query()
 
-// Update user
-user.email = 'newemail@example.com'
-await user.save()
+// Test external API
+const findexClient = new FindexClient()
+const data = await findexClient.searchByCPF('12345678901')
 ```
 
 #### Load Application Services
@@ -347,25 +417,24 @@ await loadHelpers() // Access helpers module
 
 ### REPL Best Practices
 
-1. **Use for debugging and data exploration**
-   - Test queries before implementing
-   - Inspect data relationships
-   - Debug service methods
+1. **Use for debugging genealogy algorithms**
+   - Test name matching logic
+   - Verify relationship inference
+   - Debug duplicate detection
 
 2. **Common Use Cases**
-   - Testing model queries
-   - Debugging service logic
-   - Inspecting configuration
-   - Running one-off data migrations
-   - Testing email templates
-   - Verifying queue jobs
+   - Testing external API responses
+   - Debugging family tree algorithms
+   - Inspecting relationship data
+   - Running data migrations
+   - Testing import processes
 
 ### REPL Tips
 
 - Use `importDefault()` for cleaner imports
-- Access configs via `await loadConfig()`
-- Test services interactively before implementing
-- Use `.ls` to list all available methods
+- Test Findexbuscas API responses before implementing
+- Verify relationship calculations interactively
+- Use `.ls` to list available methods
 - Press Tab for auto-completion
 - Use `.exit` or Ctrl+C twice to quit
 
@@ -375,11 +444,13 @@ await loadHelpers() // Access helpers module
    - Use `node ace make:controller` not manual file creation
    - Use `node ace make:migration` not manual database files
    - Use `node ace make:service` not manual service files
+   - Use `node ace make:job` for queue jobs
 
 2. **Follow the Architecture**
    - Controller → Service → Repository → Model flow
    - Use dependency injection with `@inject()` decorator
    - Keep business logic in services, not controllers
+   - Use jobs for long-running operations
 
 3. **Use Import Aliases**
    - Always use `#controllers/*`, `#services/*`, etc.
@@ -389,25 +460,42 @@ await loadHelpers() // Access helpers module
    - Run `pnpm lint` - Must pass
    - Run `pnpm typecheck` - Must pass
    - Run `pnpm test` - Must pass
+   - Test external API integrations with mocks
 
-5. **Suggest REPL for Debugging**
-   - When users need to explore data
-   - When testing queries before implementation
-   - When debugging service methods
+5. **Genealogy-Specific Guidelines**
+   - Use queue jobs for family tree imports
+   - Cache external API responses in Redis
+   - Implement duplicate detection for person imports
+   - Validate Brazilian CPF format (11 digits)
+   - Handle missing data gracefully
+   - Use transactions for complex operations
 
-6. **Example Workflow**
+6. **Example Genealogy Workflow**
 
    ```bash
-   # User asks: "Create a new product feature"
+   # User asks: "Add feature to import family by mother's name"
 
    # Execute in order:
-   node ace make:model Product -m
-   node ace make:controller Product --resource
-   node ace make:validator CreateProduct
-   node ace make:service products/CreateProduct
-   node ace make:service products/UpdateProduct
-   node ace make:service products/DeleteProduct
-   node ace make:factory Product
-   node ace make:test ProductController --suite=functional
-   node ace migration:run
+   node ace make:validator imports/ImportByMother
+   node ace make:service people/ImportByMotherService
+   node ace make:job ImportByMotherJob
+   node ace make:controller person/ImportByMother
+   node ace make:test imports/ImportByMother --suite=functional
    ```
+
+7. **External API Guidelines**
+   - Always use FindexCacheService for API calls
+   - Implement retry logic for failed requests
+   - Log all API interactions
+   - Handle rate limiting gracefully
+   - Map external data to internal models properly
+
+## Environment Variables
+
+Key environment variables for genealogy features:
+
+- `FINDEX_CPF_API_KEY` - Findexbuscas CPF search API key
+- `FINDEX_PARENT_API_KEY` - Findexbuscas parent search API key
+- `REDIS_HOST` - Redis host for caching and queues
+- `REDIS_PORT` - Redis port
+- `REDIS_PASSWORD` - Redis password
