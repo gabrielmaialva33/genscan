@@ -20,9 +20,9 @@ const buttonVariants = cva(
         ghost:
           'text-accent-foreground hover:bg-accent hover:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        success: 'bg-green-500 text-white hover:bg-green-600 data-[state=open]:bg-green-600',
-        warning: 'bg-yellow-500 text-white hover:bg-yellow-600 data-[state=open]:bg-yellow-600',
-        info: 'bg-blue-500 text-white hover:bg-blue-600 data-[state=open]:bg-blue-600',
+        success: 'bg-olive text-white hover:bg-olive/90 data-[state=open]:bg-olive/90',
+        warning: 'bg-amber text-white hover:bg-amber/90 data-[state=open]:bg-amber/90',
+        info: 'bg-slate-blue text-white hover:bg-slate-blue/90 data-[state=open]:bg-slate-blue/90',
       },
       size: {
         lg: 'h-10 rounded-md px-4 text-sm gap-1.5 [&_svg:not([class*=size-])]:size-4',

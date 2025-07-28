@@ -80,7 +80,7 @@ export function HowItWorks() {
                   <ul className="space-y-2">
                     {step.features.map((feature) => (
                       <li key={feature} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-green flex-shrink-0" />
+                        <CheckCircle className="w-4 h-4 text-olive flex-shrink-0" />
                         <span className="text-muted-foreground">{feature}</span>
                       </li>
                     ))}

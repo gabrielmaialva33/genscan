@@ -33,7 +33,7 @@ export function CTASection() {
 
           {/* Title */}
           <h2 className="text-4xl md:text-6xl font-bold mb-6">
-            Pronto para desvendar <span className="text-yellow">sua história?</span>
+            Pronto para desvendar <span className="text-antique-gold">sua história?</span>
           </h2>
 
           {/* Subtitle */}
@@ -46,7 +46,7 @@ export function CTASection() {
           <div className="flex flex-wrap justify-center gap-4 mb-10">
             {benefits.map((benefit) => (
               <div key={benefit} className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green" />
+                <CheckCircle className="w-5 h-5 text-antique-gold" />
                 <span className="text-white/80">{benefit}</span>
               </div>
             ))}

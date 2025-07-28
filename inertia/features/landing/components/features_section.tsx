@@ -7,48 +7,48 @@ const features = [
     title: 'IA para Descobertas',
     description:
       'Nossa IA analisa e cruza dados de múltiplas fontes, sugerindo conexões e revelando parentes que você não conhecia.',
-    color: 'lavender',
-    gradient: 'from-lavender/20 to-mauve/20',
+    color: 'slate-blue',
+    gradient: 'from-slate-blue/10 to-slate-blue/20',
   },
   {
     icon: Link2,
     title: 'Integração FamilySearch',
     description:
       'Importe sua árvore genealógica do FamilySearch com um clique e comece a expandir sua pesquisa imediatamente.',
-    color: 'sky',
-    gradient: 'from-sky/20 to-sapphire/20',
+    color: 'moss',
+    gradient: 'from-moss/10 to-olive/20',
   },
   {
     icon: Database,
     title: 'Dados Brasileiros',
     description:
       'Acesso exclusivo a registros nacionais, cartórios e bases de dados brasileiras para descobertas únicas.',
-    color: 'green',
-    gradient: 'from-green/20 to-teal/20',
+    color: 'olive',
+    gradient: 'from-olive/10 to-moss/20',
   },
   {
     icon: TreePine,
     title: 'Visualização Interativa',
     description:
       'Navegue por sua história familiar em árvores genealógicas lindas e fáceis de explorar, otimizadas para qualquer dispositivo.',
-    color: 'peach',
-    gradient: 'from-peach/20 to-pink/20',
+    color: 'terracotta',
+    gradient: 'from-terracotta/10 to-earth/20',
   },
   {
     icon: Search,
     title: 'Busca Inteligente',
     description:
       'Encontre familiares por nome, CPF, ou deixe nossa IA descobrir conexões através de análise de padrões.',
-    color: 'mauve',
-    gradient: 'from-mauve/20 to-lavender/20',
+    color: 'earth',
+    gradient: 'from-earth/10 to-antique-gold/20',
   },
   {
     icon: Shield,
     title: 'Privacidade Garantida',
     description:
       'Seus dados são criptografados e você controla completamente quem pode ver sua árvore genealógica.',
-    color: 'flamingo',
-    gradient: 'from-flamingo/20 to-red/20',
+    color: 'antique-gold',
+    gradient: 'from-antique-gold/10 to-amber/20',
   },
 ]
 
@@ -95,7 +95,7 @@ export function FeaturesSection() {
                   'group-hover:scale-110 transition-transform duration-300'
                 )}
               >
-                <feature.icon className={cn('w-8 h-8', `text-${feature.color}`)} />
+                <feature.icon className="w-8 h-8 text-primary" />
               </div>
 
               {/* Content */}
