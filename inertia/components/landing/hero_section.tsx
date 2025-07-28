@@ -13,7 +13,7 @@ export function HeroSection() {
       <DNAParticles className="absolute inset-0" />
 
       {/* Gradient Orbs */}
-      <div className="absolute top-1/4 -left-1/4 w-96 h-96 bg-gradient-cool rounded-full blur-3xl opacity-20 animate-float" />
+      <div className="absolute top-1/4 -left-1/4 w-96 h-96 bg-gradient-nature rounded-full blur-3xl opacity-20 animate-float" />
       <div className="absolute bottom-1/4 -right-1/4 w-96 h-96 bg-gradient-warm rounded-full blur-3xl opacity-20 animate-float-slow" />
 
       {/* Content */}
@@ -50,7 +50,7 @@ export function HeroSection() {
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="bg-gradient-dna text-base border-0 shadow-glow hover:shadow-glow-sm px-8 py-6 text-lg group"
+                  className="bg-gradient-heritage text-parchment border-0 shadow-glow hover:shadow-glow-sm px-8 py-6 text-lg group font-semibold"
                 >
                   <Dna className="w-5 h-5 mr-2 animate-dna" />
                   Comece Agora, é Grátis

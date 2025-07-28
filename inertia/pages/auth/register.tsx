@@ -63,18 +63,18 @@ export default function RegisterPage({ errors }: RegisterPageProps) {
       </div>
 
       {/* Right side - Visual */}
-      <div className="hidden lg:block lg:w-[50%] xl:w-[60%] relative bg-gradient-dna">
+      <div className="hidden lg:block lg:w-[50%] xl:w-[60%] relative bg-gradient-heritage">
         {/* DNA Particles Background */}
         <DNAParticles className="absolute inset-0 opacity-20" />
 
         {/* Dark overlay for contrast */}
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/20" />
 
         {/* Content */}
         <div className="absolute inset-0 flex items-center justify-center p-12 z-10">
           <div className="max-w-md">
             <h2 className="text-4xl font-bold mb-8 text-white text-center">
-              O que você vai <span className="text-yellow">descobrir</span>
+              O que você vai <span className="text-parchment">descobrir</span>
             </h2>
 
             {/* Features */}
@@ -119,7 +119,7 @@ export default function RegisterPage({ errors }: RegisterPageProps) {
             {/* Social Proof */}
             <div className="mt-8 p-4 rounded-xl bg-white/10 backdrop-blur text-center">
               <p className="text-sm text-white/90">
-                <span className="font-semibold text-yellow">+5.000</span> famílias brasileiras já
+                <span className="font-semibold text-parchment">+5.000</span> famílias brasileiras já
                 descobriram suas origens com a Genscan
               </p>
             </div>

@@ -2,182 +2,198 @@
 
 @layer base {
   :root {
-    /* Catppuccin Latte Color System */
-    /* Base colors */
-    --rosewater: 11 59% 67%;
-    --flamingo: 0 60% 67%;
-    --pink: 316 73% 69%;
-    --mauve: 266 85% 58%;
-    --red: 347 87% 44%;
-    --maroon: 355 76% 59%;
-    --peach: 22 99% 52%;
-    --yellow: 35 77% 49%;
-    --green: 109 58% 40%;
-    --teal: 183 74% 35%;
-    --sky: 197 97% 46%;
-    --sapphire: 189 70% 42%;
-    --blue: 220 91% 54%;
-    --lavender: 231 97% 72%;
-
-    /* Surface colors */
-    --text: 234 16% 35%;
-    --subtext1: 233 13% 41%;
-    --subtext0: 233 10% 47%;
-    --overlay2: 232 10% 53%;
-    --overlay1: 231 10% 59%;
-    --overlay0: 228 11% 65%;
-    --surface2: 227 12% 71%;
-    --surface1: 225 14% 77%;
-    --surface0: 223 16% 83%;
-    --base: 220 23% 95%;
-    --mantle: 220 22% 92%;
-    --crust: 220 21% 89%;
+    /* Genscan Heritage Color System - Light Mode */
+    /* Primary colors - Earth & Heritage */
+    --earth: 30 75% 34%; /* #8B4513 - Terra/Marrom quente */
+    --moss: 104 22% 33%; /* #4A6741 - Verde musgo */
+    --antique-gold: 43 85% 39%; /* #B8860B - Dourado antigo */
+    --terracotta: 0 53% 58%; /* #CD5C5C - Terracota suave */
+    --olive: 80 60% 35%; /* #6B8E23 - Verde oliva */
+    --slate-blue: 207 44% 49%; /* #4682B4 - Azul ardósia */
+    
+    /* Neutral colors */
+    --parchment: 30 67% 94%; /* #FAF0E6 - Pergaminho claro */
+    --warm-gray: 30 10% 85%; /* Cinza quente */
+    --stone: 30 15% 75%; /* Pedra */
+    --bark: 24 30% 25%; /* Casca de árvore */
+    --soil: 24 48% 15%; /* Solo escuro */
+    
+    /* Semantic colors */
+    --red: 0 65% 50%; /* Vermelho herança */
+    --amber: 38 90% 50%; /* Âmbar */
+    --forest: 120 40% 40%; /* Verde floresta */
+    
+    /* Surface colors - Light mode */
+    --text: 24 35% 20%; /* Texto principal - marrom escuro */
+    --subtext1: 24 25% 30%; /* Subtexto 1 */
+    --subtext0: 24 15% 40%; /* Subtexto 0 */
+    --overlay2: 30 10% 50%; /* Overlay 2 */
+    --overlay1: 30 10% 60%; /* Overlay 1 */
+    --overlay0: 30 10% 70%; /* Overlay 0 */
+    --surface2: 30 15% 80%; /* Superfície 2 */
+    --surface1: 30 20% 87%; /* Superfície 1 */
+    --surface0: 30 25% 92%; /* Superfície 0 */
+    --base: var(--parchment); /* Fundo base */
+    --mantle: 30 40% 96%; /* Manto */
+    --crust: 30 35% 98%; /* Crosta */
 
     /* Semantic color mappings */
     --background: var(--base);
     --foreground: var(--text);
 
-    --card: var(--base);
+    --card: 30 40% 98%; /* Card mais claro */
     --card-foreground: var(--text);
 
     --popover: var(--base);
     --popover-foreground: var(--text);
 
-    --primary: var(--mauve);
-    --primary-foreground: var(--base);
+    --primary: var(--earth);
+    --primary-foreground: var(--parchment);
 
-    --secondary: var(--sky);
-    --secondary-foreground: var(--base);
+    --secondary: var(--moss);
+    --secondary-foreground: var(--parchment);
 
     --muted: var(--surface0);
     --muted-foreground: var(--subtext0);
 
-    --accent: var(--peach);
-    --accent-foreground: var(--base);
+    --accent: var(--antique-gold);
+    --accent-foreground: var(--soil);
 
     --destructive: var(--red);
-    --destructive-foreground: var(--base);
+    --destructive-foreground: var(--parchment);
 
-    --border: var(--surface0);
+    --border: var(--surface1);
     --input: var(--surface0);
-    --ring: var(--mauve);
+    --ring: var(--earth);
 
     --radius: 0.5rem;
 
     /* Additional semantic variables */
-    --success: var(--green);
-    --success-foreground: var(--base);
+    --success: var(--olive);
+    --success-foreground: var(--parchment);
 
-    --warning: var(--yellow);
-    --warning-foreground: var(--base);
+    --warning: var(--amber);
+    --warning-foreground: var(--soil);
 
-    --info: var(--sky);
-    --info-foreground: var(--base);
+    --info: var(--slate-blue);
+    --info-foreground: var(--parchment);
 
     /* Chart colors */
-    --chart-1: var(--mauve);
-    --chart-2: var(--sky);
-    --chart-3: var(--peach);
-    --chart-4: var(--lavender);
-    --chart-5: var(--flamingo);
+    --chart-1: var(--earth);
+    --chart-2: var(--moss);
+    --chart-3: var(--antique-gold);
+    --chart-4: var(--terracotta);
+    --chart-5: var(--olive);
 
     /* Custom gradients */
-    --gradient-dna: linear-gradient(
+    --gradient-heritage: linear-gradient(
       135deg,
-      hsl(var(--mauve)),
-      hsl(var(--lavender)),
-      hsl(var(--sky))
+      hsl(var(--earth)),
+      hsl(var(--antique-gold))
+    );
+    --gradient-nature: linear-gradient(
+      135deg,
+      hsl(var(--moss)),
+      hsl(var(--olive))
     );
     --gradient-warm: linear-gradient(
       135deg,
-      hsl(var(--peach)),
-      hsl(var(--pink)),
-      hsl(var(--flamingo))
+      hsl(var(--terracotta)),
+      hsl(var(--antique-gold)),
+      hsl(var(--amber))
     );
-    --gradient-cool: linear-gradient(
-      135deg,
-      hsl(var(--sky)),
-      hsl(var(--sapphire)),
-      hsl(var(--blue))
+    --gradient-subtle: linear-gradient(
+      135deg, 
+      hsl(var(--base)), 
+      hsl(var(--mantle))
     );
-    --gradient-subtle: linear-gradient(135deg, hsl(var(--base)), hsl(var(--mantle)));
+    
+    /* Legacy gradient names for compatibility */
+    --gradient-dna: var(--gradient-heritage);
+    --gradient-cool: var(--gradient-nature);
   }
 
   .dark {
-    /* Catppuccin Mocha for dark mode */
-    --rosewater: 10 56% 91%;
-    --flamingo: 0 59% 88%;
-    --pink: 316 72% 86%;
-    --mauve: 267 84% 81%;
-    --red: 343 81% 75%;
-    --maroon: 350 65% 77%;
-    --peach: 23 92% 75%;
-    --yellow: 41 86% 83%;
-    --green: 115 54% 76%;
-    --teal: 170 57% 73%;
-    --sky: 189 71% 73%;
-    --sapphire: 199 76% 69%;
-    --blue: 217 92% 76%;
-    --lavender: 232 97% 85%;
-
-    --text: 226 64% 88%;
-    --subtext1: 227 35% 80%;
-    --subtext0: 228 24% 72%;
-    --overlay2: 228 17% 64%;
-    --overlay1: 228 15% 57%;
-    --overlay0: 228 13% 50%;
-    --surface2: 228 12% 44%;
-    --surface1: 228 12% 38%;
-    --surface0: 229 13% 31%;
-    --base: 232 23% 18%;
-    --mantle: 233 23% 15%;
-    --crust: 235 23% 13%;
+    /* Genscan Heritage Color System - Dark Mode */
+    /* Primary colors - Earth & Heritage (adjusted for dark) */
+    --earth: 25 55% 65%; /* Terra mais clara */
+    --moss: 104 25% 60%; /* Verde musgo claro */
+    --antique-gold: 43 75% 70%; /* Dourado antigo claro */
+    --terracotta: 0 45% 70%; /* Terracota clara */
+    --olive: 80 50% 65%; /* Verde oliva claro */
+    --slate-blue: 207 40% 65%; /* Azul ardósia claro */
+    
+    /* Neutral colors - Dark mode */
+    --parchment: 30 20% 85%; /* Pergaminho escurecido */
+    --warm-gray: 24 10% 35%; /* Cinza quente escuro */
+    --stone: 24 12% 28%; /* Pedra escura */
+    --bark: 24 25% 18%; /* Casca escura */
+    --soil: 24 48% 11%; /* Solo muito escuro */
+    
+    /* Semantic colors - Dark mode */
+    --red: 0 60% 65%; /* Vermelho herança claro */
+    --amber: 38 85% 65%; /* Âmbar claro */
+    --forest: 120 35% 60%; /* Verde floresta claro */
+    
+    /* Surface colors - Dark mode */
+    --text: 30 40% 90%; /* Texto claro cremoso */
+    --subtext1: 30 30% 80%; /* Subtexto 1 */
+    --subtext0: 30 20% 70%; /* Subtexto 0 */
+    --overlay2: 24 15% 55%; /* Overlay 2 */
+    --overlay1: 24 15% 45%; /* Overlay 1 */
+    --overlay0: 24 15% 35%; /* Overlay 0 */
+    --surface2: 24 20% 25%; /* Superfície 2 */
+    --surface1: 24 22% 20%; /* Superfície 1 */
+    --surface0: 24 25% 16%; /* Superfície 0 */
+    --base: var(--soil); /* Fundo base escuro */
+    --mantle: 24 45% 9%; /* Manto muito escuro */
+    --crust: 24 40% 7%; /* Crosta */
 
     /* Dark mode semantic mappings */
     --background: var(--base);
     --foreground: var(--text);
 
-    --card: var(--base);
+    --card: 24 30% 14%; /* Card escuro */
     --card-foreground: var(--text);
 
     --popover: var(--base);
     --popover-foreground: var(--text);
 
-    --primary: var(--mauve);
-    --primary-foreground: var(--crust);
+    --primary: var(--earth);
+    --primary-foreground: var(--soil);
 
-    --secondary: var(--sky);
-    --secondary-foreground: var(--crust);
+    --secondary: var(--moss);
+    --secondary-foreground: var(--soil);
 
     --muted: var(--surface0);
     --muted-foreground: var(--subtext0);
 
-    --accent: var(--peach);
-    --accent-foreground: var(--crust);
+    --accent: var(--antique-gold);
+    --accent-foreground: var(--soil);
 
     --destructive: var(--red);
-    --destructive-foreground: var(--crust);
+    --destructive-foreground: var(--soil);
 
     --border: var(--surface0);
     --input: var(--surface0);
-    --ring: var(--mauve);
+    --ring: var(--earth);
 
     /* Dark mode additional */
-    --success: var(--green);
-    --success-foreground: var(--crust);
+    --success: var(--olive);
+    --success-foreground: var(--soil);
 
-    --warning: var(--yellow);
-    --warning-foreground: var(--crust);
+    --warning: var(--amber);
+    --warning-foreground: var(--soil);
 
-    --info: var(--sky);
-    --info-foreground: var(--crust);
+    --info: var(--slate-blue);
+    --info-foreground: var(--soil);
 
     /* Dark mode chart colors */
-    --chart-1: var(--mauve);
-    --chart-2: var(--sky);
-    --chart-3: var(--peach);
-    --chart-4: var(--lavender);
-    --chart-5: var(--flamingo);
+    --chart-1: var(--earth);
+    --chart-2: var(--moss);
+    --chart-3: var(--antique-gold);
+    --chart-4: var(--terracotta);
+    --chart-5: var(--olive);
   }
 }
 

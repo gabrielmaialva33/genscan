@@ -60,12 +60,12 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Visual */}
-      <div className="hidden lg:block lg:w-[50%] xl:w-[60%] relative bg-gradient-dna">
+      <div className="hidden lg:block lg:w-[50%] xl:w-[60%] relative bg-gradient-heritage">
         {/* DNA Particles Background */}
         <DNAParticles className="absolute inset-0 opacity-20" />
 
         {/* Dark overlay for contrast */}
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/20" />
 
         {/* Content */}
         <div className="absolute inset-0 flex items-center justify-center p-12 z-10">
@@ -76,7 +76,7 @@ export default function LoginPage() {
             </div>
 
             <h2 className="text-4xl font-bold mb-4">
-              Sua história familiar <span className="text-yellow">ao seu alcance</span>
+              Sua história familiar <span className="text-parchment">ao seu alcance</span>
             </h2>
 
             <p className="text-lg text-white/90 mb-8">
@@ -86,16 +86,16 @@ export default function LoginPage() {
 
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-yellow">50K+</div>
-                <div className="text-sm text-white/70">Famílias</div>
+                <div className="text-2xl font-bold text-parchment">50K+</div>
+                <div className="text-sm text-white/80">Famílias</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-yellow">2M+</div>
-                <div className="text-sm text-white/70">Conexões</div>
+                <div className="text-2xl font-bold text-parchment">2M+</div>
+                <div className="text-sm text-white/80">Conexões</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-yellow">99.9%</div>
-                <div className="text-sm text-white/70">Precisão</div>
+                <div className="text-2xl font-bold text-parchment">99.9%</div>
+                <div className="text-sm text-white/80">Precisão</div>
               </div>
             </div>
           </div>
