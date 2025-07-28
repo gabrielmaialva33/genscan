@@ -394,6 +394,71 @@
     box-shadow: 0 20px 40px -10px hsl(var(--primary) / 0.3);
   }
 
+  /* Button gradient hover effect */
+  .btn-gradient-heritage {
+    background: var(--gradient-heritage);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient-heritage::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--antique-gold)),
+      hsl(var(--earth))
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .btn-gradient-heritage:hover::before {
+    opacity: 1;
+  }
+
+  .btn-gradient-heritage:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 24px -8px hsl(var(--antique-gold) / 0.4);
+  }
+
+  /* Button outline hover effect */
+  .btn-outline-heritage {
+    border: 2px solid hsl(var(--earth));
+    background: transparent;
+    color: hsl(var(--earth));
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-outline-heritage::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: hsl(var(--earth));
+    transition: left 0.3s ease;
+    z-index: -1;
+  }
+
+  .btn-outline-heritage:hover::before {
+    left: 0;
+  }
+
+  .btn-outline-heritage:hover {
+    color: hsl(var(--parchment));
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 16px -4px hsl(var(--earth) / 0.3);
+  }
+
   /* Magnetic button effect */
   .magnetic {
     position: relative;

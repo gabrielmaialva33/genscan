@@ -11,7 +11,7 @@ interface MagneticButtonProps {
 export function MagneticButton({
   children,
   className,
-  strength = 0.5,
+  strength = 0.15,
   onClick,
 }: MagneticButtonProps) {
   const ref = useRef<HTMLDivElement>(null)
@@ -27,7 +27,12 @@ export function MagneticButton({
     const distanceX = (e.clientX - centerX) * strength
     const distanceY = (e.clientY - centerY) * strength
 
-    setPosition({ x: distanceX, y: distanceY })
+    // Limit maximum movement to 10px
+    const maxDistance = 10
+    const limitedX = Math.max(-maxDistance, Math.min(maxDistance, distanceX))
+    const limitedY = Math.max(-maxDistance, Math.min(maxDistance, distanceY))
+
+    setPosition({ x: limitedX, y: limitedY })
   }
 
   const handleMouseLeave = () => {
@@ -43,7 +48,7 @@ export function MagneticButton({
       onClick={onClick}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
-        transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       }}
     >
       {children}

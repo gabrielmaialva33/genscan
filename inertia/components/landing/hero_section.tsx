@@ -50,17 +50,21 @@ export function HeroSection() {
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="bg-gradient-heritage text-parchment border-0 shadow-glow hover:shadow-glow-sm px-8 py-6 text-lg group font-semibold"
+                  className="btn-gradient-heritage text-parchment border-0 px-8 py-6 text-lg group font-semibold relative z-10"
                 >
-                  <Dna className="w-5 h-5 mr-2 animate-dna" />
-                  Comece Agora, é Grátis
-                  <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                  <Dna className="w-5 h-5 mr-2 animate-dna relative z-10" />
+                  <span className="relative z-10">Comece Agora, é Grátis</span>
+                  <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1 relative z-10" />
                 </Button>
               </Link>
             </MagneticButton>
 
             <MagneticButton>
-              <Button size="lg" variant="outline" className="border-gradient px-8 py-6 text-lg">
+              <Button 
+                size="lg" 
+                variant="ghost" 
+                className="btn-outline-heritage px-8 py-6 text-lg font-semibold"
+              >
                 Ver Demo
               </Button>
             </MagneticButton>
