@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen } from '@testing-library/react'
-import { ThemeToggle } from '~/components/theme/theme_toggle'
+import { ThemeToggle } from '~/shared/components/theme/theme_toggle'
 import { render } from '~/tests/test_utils'
 
 // Mock the useTheme hook
-vi.mock('~/hooks/use_theme', () => ({
+vi.mock('~/shared/hooks/use_theme', () => ({
   useTheme: vi.fn(() => ({
     theme: 'light',
     setTheme: vi.fn(),

@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Head } from '@inertiajs/react'
 import { Calendar, CheckCircle, Clock, DollarSign, FileText, TrendingUp, Users } from 'lucide-react'
-import { MainLayout } from '~/layouts'
-import { AnimatedPage } from '~/components/animated_page'
-import { ThemeCustomizer } from '~/components/theme_customizer'
-import { ThemeStatus } from '~/components/theme/theme_status'
-import { Button } from '~/components/ui/core/button'
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/core/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/core/tabs'
+import { MainLayout } from '~/shared/layouts'
+import { AnimatedPage } from '~/shared/components/animated_page'
+import { ThemeCustomizer } from '~/shared/components/theme/theme_customizer'
+import { ThemeStatus } from '~/shared/components/theme/theme_status'
+import { Button } from '~/shared/components/ui/core/button'
+import { Card, CardContent, CardHeader, CardTitle } from '~/shared/components/ui/core/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/shared/components/ui/core/tabs'
 import {
   Drawer,
   DrawerContent,
@@ -15,8 +15,8 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from '~/components/ui/core/drawer'
-import { Stepper, StepperContent, StepperPanel } from '~/components/ui/core/stepper'
+} from '~/shared/components/ui/core/drawer'
+import { Stepper, StepperContent, StepperPanel } from '~/shared/components/ui/core/stepper'
 import {
   Timeline,
   TimelineContent,
@@ -26,11 +26,11 @@ import {
   TimelineItem,
   TimelineTime,
   TimelineTitle,
-} from '~/components/ui/core/timeline'
-import { EmptyState } from '~/components/ui/core/empty_state'
-import { StatsCard, StatsGrid } from '~/components/ui/core/stats_card'
-import { DataTable } from '~/components/ui/core/data_table'
-import { AreaChart, BarChart, PieChart } from '~/components/charts'
+} from '~/shared/components/ui/core/timeline'
+import { EmptyState } from '~/shared/components/ui/core/empty_state'
+import { StatsCard, StatsGrid } from '~/shared/components/ui/core/stats_card'
+import { DataTable } from '~/shared/components/ui/core/data_table'
+import { AreaChart, BarChart, PieChart } from '~/shared/components/charts'
 
 // Sample data
 const statsData = [

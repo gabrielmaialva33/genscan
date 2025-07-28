@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen } from '@testing-library/react'
-import { LoginForm } from '~/components/auth/LoginForm'
+import { LoginForm } from '~/features/auth/components/LoginForm'
 import { render } from '~/tests/test_utils'
 
 // Mock the inertia useForm hook

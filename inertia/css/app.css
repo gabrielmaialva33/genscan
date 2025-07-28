@@ -10,19 +10,19 @@
     --terracotta: 0 53% 58%; /* #CD5C5C - Terracota suave */
     --olive: 80 60% 35%; /* #6B8E23 - Verde oliva */
     --slate-blue: 207 44% 49%; /* #4682B4 - Azul ardósia */
-    
+
     /* Neutral colors */
     --parchment: 30 67% 94%; /* #FAF0E6 - Pergaminho claro */
     --warm-gray: 30 10% 85%; /* Cinza quente */
     --stone: 30 15% 75%; /* Pedra */
     --bark: 24 30% 25%; /* Casca de árvore */
     --soil: 24 48% 15%; /* Solo escuro */
-    
+
     /* Semantic colors */
     --red: 0 65% 50%; /* Vermelho herança */
     --amber: 38 90% 50%; /* Âmbar */
     --forest: 120 40% 40%; /* Verde floresta */
-    
+
     /* Surface colors - Light mode */
     --text: 24 35% 20%; /* Texto principal - marrom escuro */
     --subtext1: 24 25% 30%; /* Subtexto 1 */
@@ -86,28 +86,16 @@
     --chart-5: var(--olive);
 
     /* Custom gradients */
-    --gradient-heritage: linear-gradient(
-      135deg,
-      hsl(var(--earth)),
-      hsl(var(--antique-gold))
-    );
-    --gradient-nature: linear-gradient(
-      135deg,
-      hsl(var(--moss)),
-      hsl(var(--olive))
-    );
+    --gradient-heritage: linear-gradient(135deg, hsl(var(--earth)), hsl(var(--antique-gold)));
+    --gradient-nature: linear-gradient(135deg, hsl(var(--moss)), hsl(var(--olive)));
     --gradient-warm: linear-gradient(
       135deg,
       hsl(var(--terracotta)),
       hsl(var(--antique-gold)),
       hsl(var(--amber))
     );
-    --gradient-subtle: linear-gradient(
-      135deg, 
-      hsl(var(--base)), 
-      hsl(var(--mantle))
-    );
-    
+    --gradient-subtle: linear-gradient(135deg, hsl(var(--base)), hsl(var(--mantle)));
+
     /* Legacy gradient names for compatibility */
     --gradient-dna: var(--gradient-heritage);
     --gradient-cool: var(--gradient-nature);
@@ -122,19 +110,19 @@
     --terracotta: 0 45% 70%; /* Terracota clara */
     --olive: 80 50% 65%; /* Verde oliva claro */
     --slate-blue: 207 40% 65%; /* Azul ardósia claro */
-    
+
     /* Neutral colors - Dark mode */
     --parchment: 30 20% 85%; /* Pergaminho escurecido */
     --warm-gray: 24 10% 35%; /* Cinza quente escuro */
     --stone: 24 12% 28%; /* Pedra escura */
     --bark: 24 25% 18%; /* Casca escura */
     --soil: 24 48% 11%; /* Solo muito escuro */
-    
+
     /* Semantic colors - Dark mode */
     --red: 0 60% 65%; /* Vermelho herança claro */
     --amber: 38 85% 65%; /* Âmbar claro */
     --forest: 120 35% 60%; /* Verde floresta claro */
-    
+
     /* Surface colors - Dark mode */
     --text: 30 40% 90%; /* Texto claro cremoso */
     --subtext1: 30 30% 80%; /* Subtexto 1 */
@@ -409,11 +397,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(
-      135deg,
-      hsl(var(--antique-gold)),
-      hsl(var(--earth))
-    );
+    background: linear-gradient(135deg, hsl(var(--antique-gold)), hsl(var(--earth)));
     opacity: 0;
     transition: opacity 0.3s ease;
   }
