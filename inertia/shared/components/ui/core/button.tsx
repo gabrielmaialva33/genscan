@@ -5,24 +5,26 @@ import { Slot } from '@radix-ui/react-slot'
 import { cn } from '~/shared/utils/cn'
 
 const buttonVariants = cva(
-  'cursor-pointer group whitespace-nowrap focus-visible:outline-none inline-flex items-center justify-center has-data-[arrow=true]:justify-between whitespace-nowrap text-sm font-medium ring-offset-background transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-60 [&_svg]:shrink-0',
+  'cursor-pointer group whitespace-nowrap focus-visible:outline-none inline-flex items-center justify-center has-data-[arrow=true]:justify-between whitespace-nowrap text-sm font-medium ring-offset-background transition-all duration-200 disabled:pointer-events-none disabled:opacity-60 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         primary:
-          'bg-primary text-primary-foreground hover:bg-primary/90 data-[state=open]:bg-primary/90',
+          'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active data-[state=open]:bg-primary-hover shadow-sm hover:shadow-md',
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/90 data-[state=open]:bg-secondary/90',
+          'bg-secondary text-secondary-foreground hover:bg-secondary-hover active:bg-secondary-active data-[state=open]:bg-secondary-hover shadow-sm hover:shadow-md',
         destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90 data-[state=open]:bg-destructive/90',
+          'bg-destructive text-destructive-foreground hover:bg-destructive-hover active:bg-destructive-hover data-[state=open]:bg-destructive-hover shadow-sm hover:shadow-md',
         outline:
-          'bg-background text-accent-foreground border border-input hover:bg-accent data-[state=open]:bg-accent',
+          'bg-transparent text-foreground border-2 border-border hover:bg-surface-1 hover:border-border-strong active:bg-surface-2 data-[state=open]:bg-surface-1',
         ghost:
-          'text-accent-foreground hover:bg-accent hover:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
-        success: 'bg-olive text-white hover:bg-olive/90 data-[state=open]:bg-olive/90',
-        warning: 'bg-amber text-white hover:bg-amber/90 data-[state=open]:bg-amber/90',
-        info: 'bg-slate-blue text-white hover:bg-slate-blue/90 data-[state=open]:bg-slate-blue/90',
+          'text-foreground hover:bg-surface-1 hover:text-foreground active:bg-surface-2 data-[state=open]:bg-surface-1',
+        link: 'text-primary underline-offset-4 hover:underline hover:text-primary-hover active:text-primary-active',
+        success:
+          'bg-success text-success-foreground hover:bg-success-hover active:bg-success-hover data-[state=open]:bg-success-hover shadow-sm hover:shadow-md',
+        warning:
+          'bg-warning text-warning-foreground hover:bg-warning-hover active:bg-warning-hover data-[state=open]:bg-warning-hover shadow-sm hover:shadow-md',
+        info: 'bg-info text-info-foreground hover:bg-info-hover active:bg-info-hover data-[state=open]:bg-info-hover shadow-sm hover:shadow-md',
       },
       size: {
         lg: 'h-10 rounded-md px-4 text-sm gap-1.5 [&_svg:not([class*=size-])]:size-4',

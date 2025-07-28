@@ -3,185 +3,252 @@
 @layer base {
   :root {
     /* Genscan Heritage Color System - Light Mode */
-    /* Primary colors - Earth & Heritage */
-    --earth: 30 75% 34%; /* #8B4513 - Terra/Marrom quente */
-    --moss: 104 22% 33%; /* #4A6741 - Verde musgo */
-    --antique-gold: 43 85% 39%; /* #B8860B - Dourado antigo */
-    --terracotta: 0 53% 58%; /* #CD5C5C - Terracota suave */
-    --olive: 80 60% 35%; /* #6B8E23 - Verde oliva */
-    --slate-blue: 207 44% 49%; /* #4682B4 - Azul ardósia */
 
-    /* Neutral colors */
-    --parchment: 30 67% 94%; /* #FAF0E6 - Pergaminho claro */
-    --warm-gray: 30 10% 85%; /* Cinza quente */
-    --stone: 30 15% 75%; /* Pedra */
-    --bark: 24 30% 25%; /* Casca de árvore */
-    --soil: 24 48% 15%; /* Solo escuro */
+    /* =========================== */
+    /* Color Scales (11 steps)     */
+    /* =========================== */
 
-    /* Semantic colors */
-    --red: 0 65% 50%; /* Vermelho herança */
-    --amber: 38 90% 50%; /* Âmbar */
-    --forest: 120 40% 40%; /* Verde floresta */
+    /* Earth/Terra Scale */
+    --earth-50: 30 60% 97%; /* Lightest */
+    --earth-100: 30 65% 93%;
+    --earth-200: 30 68% 86%;
+    --earth-300: 30 70% 76%;
+    --earth-400: 30 72% 62%;
+    --earth-500: 30 74% 48%;
+    --earth-600: 30 75% 38%; /* Base */
+    --earth-700: 30 74% 31%;
+    --earth-800: 28 72% 26%;
+    --earth-900: 26 70% 22%;
+    --earth-950: 24 68% 12%; /* Darkest */
 
-    /* Surface colors - Light mode */
-    --text: 24 35% 20%; /* Texto principal - marrom escuro */
-    --subtext1: 24 25% 30%; /* Subtexto 1 */
-    --subtext0: 24 15% 40%; /* Subtexto 0 */
-    --overlay2: 30 10% 50%; /* Overlay 2 */
-    --overlay1: 30 10% 60%; /* Overlay 1 */
-    --overlay0: 30 10% 70%; /* Overlay 0 */
-    --surface2: 30 15% 80%; /* Superfície 2 */
-    --surface1: 30 20% 87%; /* Superfície 1 */
-    --surface0: 30 25% 92%; /* Superfície 0 */
-    --base: var(--parchment); /* Fundo base */
-    --mantle: 30 40% 96%; /* Manto */
-    --crust: 30 35% 98%; /* Crosta */
+    /* Moss/Verde Scale */
+    --moss-50: 104 25% 97%;
+    --moss-100: 104 24% 93%;
+    --moss-200: 104 23% 85%;
+    --moss-300: 104 22% 73%;
+    --moss-400: 104 22% 58%;
+    --moss-500: 104 22% 43%;
+    --moss-600: 104 22% 33%; /* Base */
+    --moss-700: 104 23% 27%;
+    --moss-800: 104 24% 22%;
+    --moss-900: 104 25% 18%;
+    --moss-950: 104 26% 10%;
 
-    /* Semantic color mappings */
-    --background: var(--base);
-    --foreground: var(--text);
+    /* Antique Gold Scale */
+    --gold-50: 43 85% 97%;
+    --gold-100: 43 85% 92%;
+    --gold-200: 43 85% 83%;
+    --gold-300: 43 85% 70%;
+    --gold-400: 43 85% 55%;
+    --gold-500: 43 85% 45%;
+    --gold-600: 43 85% 39%; /* Base */
+    --gold-700: 43 84% 32%;
+    --gold-800: 43 82% 26%;
+    --gold-900: 43 80% 21%;
+    --gold-950: 43 78% 12%;
 
-    --card: 30 40% 98%; /* Card mais claro */
-    --card-foreground: var(--text);
+    /* Terracotta Scale */
+    --terra-50: 0 50% 97%;
+    --terra-100: 0 52% 93%;
+    --terra-200: 0 53% 85%;
+    --terra-300: 0 53% 74%;
+    --terra-400: 0 53% 66%;
+    --terra-500: 0 53% 58%; /* Base */
+    --terra-600: 0 52% 48%;
+    --terra-700: 0 51% 40%;
+    --terra-800: 0 50% 33%;
+    --terra-900: 0 48% 27%;
+    --terra-950: 0 46% 15%;
 
-    --popover: var(--base);
-    --popover-foreground: var(--text);
+    /* Neutral/Stone Scale */
+    --stone-50: 30 20% 98%;
+    --stone-100: 30 18% 96%;
+    --stone-200: 30 16% 92%;
+    --stone-300: 30 15% 85%;
+    --stone-400: 30 14% 75%;
+    --stone-500: 30 13% 60%;
+    --stone-600: 30 12% 45%;
+    --stone-700: 30 13% 35%;
+    --stone-800: 28 14% 25%;
+    --stone-900: 26 15% 18%;
+    --stone-950: 24 16% 10%;
 
-    --primary: var(--earth);
-    --primary-foreground: var(--parchment);
+    /* =========================== */
+    /* Semantic Color Tokens       */
+    /* =========================== */
 
-    --secondary: var(--moss);
-    --secondary-foreground: var(--parchment);
+    /* Background layers */
+    --background: var(--stone-50);
+    --background-subtle: var(--stone-100);
+    --background-muted: var(--stone-200);
 
-    --muted: var(--surface0);
-    --muted-foreground: var(--subtext0);
+    /* Foreground/Text hierarchy */
+    --foreground: var(--stone-950);
+    --foreground-muted: var(--stone-700);
+    --foreground-subtle: var(--stone-600);
+    --foreground-disabled: var(--stone-400);
 
-    --accent: var(--antique-gold);
-    --accent-foreground: var(--soil);
+    /* Card & Surface layers */
+    --card: 0 0% 100%; /* Pure white for cards */
+    --card-foreground: var(--stone-950);
+    --card-hover: var(--stone-100);
 
-    --destructive: var(--red);
-    --destructive-foreground: var(--parchment);
+    --surface-0: var(--stone-50);
+    --surface-1: var(--stone-100);
+    --surface-2: var(--stone-200);
+    --surface-3: var(--stone-300);
 
-    --border: var(--surface1);
-    --input: var(--surface0);
-    --ring: var(--earth);
+    /* Interactive elements */
+    --primary: var(--earth-600);
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: var(--earth-700);
+    --primary-active: var(--earth-800);
 
+    --secondary: var(--moss-600);
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: var(--moss-700);
+    --secondary-active: var(--moss-800);
+
+    --accent: var(--gold-600);
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: var(--gold-700);
+    --accent-active: var(--gold-800);
+
+    /* Muted variants */
+    --muted: var(--stone-200);
+    --muted-foreground: var(--stone-700);
+
+    /* Status colors */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-hover: 0 72% 45%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-hover: 142 71% 38%;
+
+    --warning: var(--gold-500);
+    --warning-foreground: var(--stone-950);
+    --warning-hover: var(--gold-600);
+
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+    --info-hover: 199 89% 42%;
+
+    /* Borders & Input */
+    --border: var(--stone-300);
+    --border-subtle: var(--stone-200);
+    --border-strong: var(--stone-400);
+    --input: var(--stone-200);
+    --input-border: var(--stone-300);
+    --ring: var(--earth-500);
+
+    /* Other */
     --radius: 0.5rem;
 
-    /* Additional semantic variables */
-    --success: var(--olive);
-    --success-foreground: var(--parchment);
+    /* Chart colors with good contrast */
+    --chart-1: var(--earth-600);
+    --chart-2: var(--moss-600);
+    --chart-3: var(--gold-600);
+    --chart-4: var(--terra-600);
+    --chart-5: var(--stone-600);
 
-    --warning: var(--amber);
-    --warning-foreground: var(--soil);
+    /* Gradients */
+    --gradient-heritage: linear-gradient(135deg, hsl(var(--earth-600)), hsl(var(--gold-600)));
+    --gradient-nature: linear-gradient(135deg, hsl(var(--moss-600)), hsl(var(--moss-500)));
+    --gradient-warm: linear-gradient(135deg, hsl(var(--terra-500)), hsl(var(--gold-500)));
+    --gradient-subtle: linear-gradient(135deg, hsl(var(--stone-100)), hsl(var(--stone-200)));
 
-    --info: var(--slate-blue);
-    --info-foreground: var(--parchment);
-
-    /* Chart colors */
-    --chart-1: var(--earth);
-    --chart-2: var(--moss);
-    --chart-3: var(--antique-gold);
-    --chart-4: var(--terracotta);
-    --chart-5: var(--olive);
-
-    /* Custom gradients */
-    --gradient-heritage: linear-gradient(135deg, hsl(var(--earth)), hsl(var(--antique-gold)));
-    --gradient-nature: linear-gradient(135deg, hsl(var(--moss)), hsl(var(--olive)));
-    --gradient-warm: linear-gradient(
-      135deg,
-      hsl(var(--terracotta)),
-      hsl(var(--antique-gold)),
-      hsl(var(--amber))
-    );
-    --gradient-subtle: linear-gradient(135deg, hsl(var(--base)), hsl(var(--mantle)));
-
-    /* Legacy gradient names for compatibility */
+    /* Legacy support */
     --gradient-dna: var(--gradient-heritage);
     --gradient-cool: var(--gradient-nature);
   }
 
   .dark {
     /* Genscan Heritage Color System - Dark Mode */
-    /* Primary colors - Earth & Heritage (adjusted for dark) */
-    --earth: 25 55% 65%; /* Terra mais clara */
-    --moss: 104 25% 60%; /* Verde musgo claro */
-    --antique-gold: 43 75% 70%; /* Dourado antigo claro */
-    --terracotta: 0 45% 70%; /* Terracota clara */
-    --olive: 80 50% 65%; /* Verde oliva claro */
-    --slate-blue: 207 40% 65%; /* Azul ardósia claro */
 
-    /* Neutral colors - Dark mode */
-    --parchment: 30 20% 85%; /* Pergaminho escurecido */
-    --warm-gray: 24 10% 35%; /* Cinza quente escuro */
-    --stone: 24 12% 28%; /* Pedra escura */
-    --bark: 24 25% 18%; /* Casca escura */
-    --soil: 24 48% 11%; /* Solo muito escuro */
+    /* =========================== */
+    /* Semantic Color Tokens (Dark) */
+    /* =========================== */
 
-    /* Semantic colors - Dark mode */
-    --red: 0 60% 65%; /* Vermelho herança claro */
-    --amber: 38 85% 65%; /* Âmbar claro */
-    --forest: 120 35% 60%; /* Verde floresta claro */
+    /* Background layers - inverted */
+    --background: var(--stone-950);
+    --background-subtle: var(--stone-900);
+    --background-muted: var(--stone-800);
 
-    /* Surface colors - Dark mode */
-    --text: 30 40% 90%; /* Texto claro cremoso */
-    --subtext1: 30 30% 80%; /* Subtexto 1 */
-    --subtext0: 30 20% 70%; /* Subtexto 0 */
-    --overlay2: 24 15% 55%; /* Overlay 2 */
-    --overlay1: 24 15% 45%; /* Overlay 1 */
-    --overlay0: 24 15% 35%; /* Overlay 0 */
-    --surface2: 24 20% 25%; /* Superfície 2 */
-    --surface1: 24 22% 20%; /* Superfície 1 */
-    --surface0: 24 25% 16%; /* Superfície 0 */
-    --base: var(--soil); /* Fundo base escuro */
-    --mantle: 24 45% 9%; /* Manto muito escuro */
-    --crust: 24 40% 7%; /* Crosta */
+    /* Foreground/Text hierarchy - inverted */
+    --foreground: var(--stone-50);
+    --foreground-muted: var(--stone-300);
+    --foreground-subtle: var(--stone-400);
+    --foreground-disabled: var(--stone-600);
 
-    /* Dark mode semantic mappings */
-    --background: var(--base);
-    --foreground: var(--text);
+    /* Card & Surface layers - elevated in dark */
+    --card: var(--stone-900);
+    --card-foreground: var(--stone-50);
+    --card-hover: var(--stone-800);
 
-    --card: 24 30% 14%; /* Card escuro */
-    --card-foreground: var(--text);
+    --surface-0: var(--stone-900);
+    --surface-1: var(--stone-800);
+    --surface-2: var(--stone-700);
+    --surface-3: var(--stone-600);
 
-    --popover: var(--base);
-    --popover-foreground: var(--text);
+    /* Interactive elements - lighter for contrast */
+    --primary: var(--earth-400);
+    --primary-foreground: var(--stone-950);
+    --primary-hover: var(--earth-300);
+    --primary-active: var(--earth-200);
 
-    --primary: var(--earth);
-    --primary-foreground: var(--soil);
+    --secondary: var(--moss-400);
+    --secondary-foreground: var(--stone-950);
+    --secondary-hover: var(--moss-300);
+    --secondary-active: var(--moss-200);
 
-    --secondary: var(--moss);
-    --secondary-foreground: var(--soil);
+    --accent: var(--gold-400);
+    --accent-foreground: var(--stone-950);
+    --accent-hover: var(--gold-300);
+    --accent-active: var(--gold-200);
 
-    --muted: var(--surface0);
-    --muted-foreground: var(--subtext0);
+    /* Muted variants */
+    --muted: var(--stone-800);
+    --muted-foreground: var(--stone-400);
 
-    --accent: var(--antique-gold);
-    --accent-foreground: var(--soil);
+    /* Status colors - adjusted for dark */
+    --destructive: 0 62% 65%;
+    --destructive-foreground: var(--stone-950);
+    --destructive-hover: 0 62% 70%;
 
-    --destructive: var(--red);
-    --destructive-foreground: var(--soil);
+    --success: 142 60% 60%;
+    --success-foreground: var(--stone-950);
+    --success-hover: 142 60% 65%;
 
-    --border: var(--surface0);
-    --input: var(--surface0);
-    --ring: var(--earth);
+    --warning: var(--gold-300);
+    --warning-foreground: var(--stone-950);
+    --warning-hover: var(--gold-200);
 
-    /* Dark mode additional */
-    --success: var(--olive);
-    --success-foreground: var(--soil);
+    --info: 199 75% 65%;
+    --info-foreground: var(--stone-950);
+    --info-hover: 199 75% 70%;
 
-    --warning: var(--amber);
-    --warning-foreground: var(--soil);
+    /* Borders & Input */
+    --border: var(--stone-700);
+    --border-subtle: var(--stone-800);
+    --border-strong: var(--stone-600);
+    --input: var(--stone-800);
+    --input-border: var(--stone-700);
+    --ring: var(--earth-400);
 
-    --info: var(--slate-blue);
-    --info-foreground: var(--soil);
+    /* Chart colors - lighter for dark mode */
+    --chart-1: var(--earth-400);
+    --chart-2: var(--moss-400);
+    --chart-3: var(--gold-400);
+    --chart-4: var(--terra-400);
+    --chart-5: var(--stone-400);
 
-    /* Dark mode chart colors */
-    --chart-1: var(--earth);
-    --chart-2: var(--moss);
-    --chart-3: var(--antique-gold);
-    --chart-4: var(--terracotta);
-    --chart-5: var(--olive);
+    /* Gradients - adjusted for dark */
+    --gradient-heritage: linear-gradient(135deg, hsl(var(--earth-400)), hsl(var(--gold-400)));
+    --gradient-nature: linear-gradient(135deg, hsl(var(--moss-400)), hsl(var(--moss-300)));
+    --gradient-warm: linear-gradient(135deg, hsl(var(--terra-400)), hsl(var(--gold-300)));
+    --gradient-subtle: linear-gradient(135deg, hsl(var(--stone-800)), hsl(var(--stone-700)));
   }
 }
 

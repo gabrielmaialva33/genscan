@@ -6,8 +6,9 @@ const Card = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement> & {
     border?: boolean
     shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+    variant?: 'default' | 'elevated' | 'outline'
   }
->(({ className, border = true, shadow = 'sm', ...props }, ref) => {
+>(({ className, border = true, shadow = 'sm', variant = 'default', ...props }, ref) => {
   const shadowClasses = {
     none: '',
     sm: 'shadow-sm',
@@ -16,12 +17,21 @@ const Card = React.forwardRef<
     xl: 'shadow-xl',
   }
 
+  const variantClasses = {
+    default: 'bg-card text-card-foreground',
+    elevated:
+      'bg-card text-card-foreground shadow-lg hover:shadow-xl transition-shadow duration-200',
+    outline: 'bg-transparent border-2 text-foreground',
+  }
+
   return (
     <div
       ref={ref}
       className={cn(
-        'rounded-lg bg-card text-card-foreground',
-        border && 'border',
+        'rounded-lg transition-all duration-200',
+        variantClasses[variant],
+        variant !== 'outline' && border && 'border border-border',
+        variant === 'outline' && 'border-border-strong',
         shadowClasses[shadow],
         className
       )}
@@ -63,7 +73,7 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
+  <p ref={ref} className={cn('text-sm text-foreground-muted', className)} {...props} />
 ))
 CardDescription.displayName = 'CardDescription'
 
@@ -82,7 +92,7 @@ const CardFooter = React.forwardRef<
 >(({ className, border = false, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex items-center p-6 pt-0', border && 'border-t pt-6', className)}
+    className={cn('flex items-center p-6 pt-0', border && 'border-t border-border pt-6', className)}
     {...props}
   />
 ))

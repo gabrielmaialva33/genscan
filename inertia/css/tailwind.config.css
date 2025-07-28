@@ -2,40 +2,126 @@
 
 /* Configure Tailwind v4 theme */
 @theme {
-  /* Define custom colors that reference CSS variables */
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
+  /* Background & Foreground */
   --color-background: hsl(var(--background));
+  --color-background-subtle: hsl(var(--background-subtle));
+  --color-background-muted: hsl(var(--background-muted));
   --color-foreground: hsl(var(--foreground));
+  --color-foreground-muted: hsl(var(--foreground-muted));
+  --color-foreground-subtle: hsl(var(--foreground-subtle));
+  --color-foreground-disabled: hsl(var(--foreground-disabled));
+
+  /* Cards & Surfaces */
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card-hover: hsl(var(--card-hover));
+  --color-surface-0: hsl(var(--surface-0));
+  --color-surface-1: hsl(var(--surface-1));
+  --color-surface-2: hsl(var(--surface-2));
+  --color-surface-3: hsl(var(--surface-3));
+
+  /* Interactive Elements */
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-primary-active: hsl(var(--primary-active));
+
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-secondary-hover: hsl(var(--secondary-hover));
+  --color-secondary-active: hsl(var(--secondary-active));
+
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-hover: hsl(var(--accent-hover));
+  --color-accent-active: hsl(var(--accent-active));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  /* Status Colors */
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-hover: hsl(var(--destructive-hover));
+
   --color-success: hsl(var(--success));
   --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-hover: hsl(var(--success-hover));
+
   --color-warning: hsl(var(--warning));
   --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-hover: hsl(var(--warning-hover));
+
   --color-info: hsl(var(--info));
   --color-info-foreground: hsl(var(--info-foreground));
-  
-  /* Heritage theme colors */
-  --color-earth: hsl(var(--earth));
-  --color-moss: hsl(var(--moss));
-  --color-antique-gold: hsl(var(--antique-gold));
-  --color-terracotta: hsl(var(--terracotta));
-  --color-olive: hsl(var(--olive));
-  --color-slate-blue: hsl(var(--slate-blue));
-  --color-amber: hsl(var(--amber));
-  --color-forest: hsl(var(--forest));
+  --color-info-hover: hsl(var(--info-hover));
+
+  /* Borders & Input */
+  --color-border: hsl(var(--border));
+  --color-border-subtle: hsl(var(--border-subtle));
+  --color-border-strong: hsl(var(--border-strong));
+  --color-input: hsl(var(--input));
+  --color-input-border: hsl(var(--input-border));
+  --color-ring: hsl(var(--ring));
+
+  /* Heritage Color Scales */
+  --color-earth-50: hsl(var(--earth-50));
+  --color-earth-100: hsl(var(--earth-100));
+  --color-earth-200: hsl(var(--earth-200));
+  --color-earth-300: hsl(var(--earth-300));
+  --color-earth-400: hsl(var(--earth-400));
+  --color-earth-500: hsl(var(--earth-500));
+  --color-earth-600: hsl(var(--earth-600));
+  --color-earth-700: hsl(var(--earth-700));
+  --color-earth-800: hsl(var(--earth-800));
+  --color-earth-900: hsl(var(--earth-900));
+  --color-earth-950: hsl(var(--earth-950));
+
+  --color-moss-50: hsl(var(--moss-50));
+  --color-moss-100: hsl(var(--moss-100));
+  --color-moss-200: hsl(var(--moss-200));
+  --color-moss-300: hsl(var(--moss-300));
+  --color-moss-400: hsl(var(--moss-400));
+  --color-moss-500: hsl(var(--moss-500));
+  --color-moss-600: hsl(var(--moss-600));
+  --color-moss-700: hsl(var(--moss-700));
+  --color-moss-800: hsl(var(--moss-800));
+  --color-moss-900: hsl(var(--moss-900));
+  --color-moss-950: hsl(var(--moss-950));
+
+  --color-gold-50: hsl(var(--gold-50));
+  --color-gold-100: hsl(var(--gold-100));
+  --color-gold-200: hsl(var(--gold-200));
+  --color-gold-300: hsl(var(--gold-300));
+  --color-gold-400: hsl(var(--gold-400));
+  --color-gold-500: hsl(var(--gold-500));
+  --color-gold-600: hsl(var(--gold-600));
+  --color-gold-700: hsl(var(--gold-700));
+  --color-gold-800: hsl(var(--gold-800));
+  --color-gold-900: hsl(var(--gold-900));
+  --color-gold-950: hsl(var(--gold-950));
+
+  --color-terra-50: hsl(var(--terra-50));
+  --color-terra-100: hsl(var(--terra-100));
+  --color-terra-200: hsl(var(--terra-200));
+  --color-terra-300: hsl(var(--terra-300));
+  --color-terra-400: hsl(var(--terra-400));
+  --color-terra-500: hsl(var(--terra-500));
+  --color-terra-600: hsl(var(--terra-600));
+  --color-terra-700: hsl(var(--terra-700));
+  --color-terra-800: hsl(var(--terra-800));
+  --color-terra-900: hsl(var(--terra-900));
+  --color-terra-950: hsl(var(--terra-950));
+
+  --color-stone-50: hsl(var(--stone-50));
+  --color-stone-100: hsl(var(--stone-100));
+  --color-stone-200: hsl(var(--stone-200));
+  --color-stone-300: hsl(var(--stone-300));
+  --color-stone-400: hsl(var(--stone-400));
+  --color-stone-500: hsl(var(--stone-500));
+  --color-stone-600: hsl(var(--stone-600));
+  --color-stone-700: hsl(var(--stone-700));
+  --color-stone-800: hsl(var(--stone-800));
+  --color-stone-900: hsl(var(--stone-900));
+  --color-stone-950: hsl(var(--stone-950));
 }
